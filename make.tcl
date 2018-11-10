@@ -43,10 +43,10 @@ proc makeLists {cfgFile options} {
     set MTCL_OPT_LIST $options 
 
     #Remove any previous definitions of the MTCL api procs
-    # if {info exists MTCL_OPT}  {unset MTCL_OPT}
-    # if {info exists MTCL_SRC}  {unset MTCL_SRC}
-    # if {info exists MTCL_TB}   {unset MTCL_TB}
-    # if {info exists MTCL_VLIB} {unset MTCL_VLIB}
+    unset -nocomplain MTCL_OPT
+    unset -nocomplain MTCL_SRC
+    unset -nocomplain MTCL_TB
+    unset -nocomplain MTCL_VLIB
 
     #Source the .config file safely
     if {[catch {source $cfgFile}]} {
@@ -60,15 +60,15 @@ proc makeLists {cfgFile options} {
     #Merge in the latest options. Must be done first as 
     #the options might change how the lists return
     # if {info exists MTCL_OPT}  {
-        set MTCL_OPT_LIST [dict merge $MTCL_OPT_LIST [MTCL_OPT]]
+        set MTCL_OPT_LIST  [dict merge $MTCL_OPT_LIST  [MTCL_OPT]]
     # }
     #Merge in the test bench lists
     # if {info exists MTCL_TB}   {
-        set MTCL_TB_LIST  [dict merge $MTCL_TB_LIST  [MTCL_TB $MTCL_OPT_LIST]]
+        set MTCL_TB_LIST   [dict merge $MTCL_TB_LIST   [MTCL_TB $MTCL_OPT_LIST]]
     # }
     #Merge in the vendor library lists
     # if {info exists MTCL_VLIB} {
-        set MTCL_VLIB_LIST[dict merge $MTCL_VLIB_LIST[MTCL_VLIB $MTCL_OPT_LIST]]
+        set MTCL_VLIB_LIST [dict merge $MTCL_VLIB_LIST [MTCL_VLIB $MTCL_OPT_LIST]]
     # }
 
 
@@ -103,20 +103,51 @@ proc makeLists {cfgFile options} {
     mTclLog 0 "MTCL - Exiting  .config file $cfgFile"  
 }
 
+proc dumpList {l header} {
+    mTclLog 0 "--------------------------------------------------------------------------"
+    mTclLog 0 $header
+    mTclLog 0 "--------------------------------------------------------------------------"
+    foreach item $l {
+        mTclLog 0 "$item"
+    }
+}
+proc dumpDict {d headers {formatStr "%-60s%-15s"}} {
+    # mTclLog 0 $headers
+    mTclLog 0 "--------------------------------------------------------------------------"
+    mTclLog 0 [format $formatStr [lindex $headers 0] [lindex $headers 1]] 
+    mTclLog 0 "--------------------------------------------------------------------------"
+    foreach key [dict keys $d] {
+        set value [dict get $d $key]
+        mTclLog 0 [format $formatStr "$key" "$value"] 
+    }
+}
+
 proc dumpLists {{src_list "global"}} {
     global MTCL_SRC_LIST
     if {$src_list == "global"} {
         set src_list $MTCL_SRC_LIST
     }
 
-    mTclLog 0 "MTCL - dumping all lists"
-    set formatStr {%-60s%-15s}
-    mTclLog 0 [format $formatStr "FILE" "LIBRARY"]
-    foreach fname [dict keys $src_list] {
-        # puts "fname = $fname"
-        set lib [dict get $src_list $fname]
-        # puts "We have file $fname library $lib"
-        mTclLog 0 [format $formatStr "$fname" "$lib"] 
-    }
+    global MTCL_CFG_LIST
+    global MTCL_TB_LIST
+    global MTCL_VLIB_LIST
+
+    # set formatStr {%-60s%-15s}
+
+    mTclLog 0 "\nConfig File List"
+    set header "FILE"
+    dumpList $MTCL_CFG_LIST $header
+
+    mTclLog 0 "\nMain Source File List"
+    set headers {"FILE" "LIBARAY"}
+    dumpDict $src_list $headers
+
+    mTclLog 0 "\nTest Bench List"
+    set headers {"TEST BENCH" "LIBARAY"}
+    dumpDict $MTCL_TB_LIST $headers
+
+    mTclLog 0 "\nVendor Library List"
+    set headers {"VENDOR FILE" "LIBARAY"}
+    dumpDict $MTCL_VLIB_LIST $headers
 }
 
