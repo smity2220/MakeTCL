@@ -1,19 +1,19 @@
 
-
 mTclLog 0 "MTCL VIVADO currently supports the following versions... none"
 
-proc newProj{} {
 
-}
+# proc newProj{platform} {
 
-proc addToProj{} {
+# }
 
-} 
+# proc addToProj{file lib {opt ""}} {
 
-proc synth {} {
+# } 
 
-}
+# proc synth{platform} {
 
-proc impl {} {
+# }
 
-}
+# proc impl{platform} {
+
+# }
