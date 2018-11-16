@@ -20,5 +20,5 @@ dumpLists
 #Compile and simulate
 #-------------------------------
 source ../toolchains/simulators/simulator.tcl
-newSimulator 0
+newSimulator $options
 cc

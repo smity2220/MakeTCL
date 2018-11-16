@@ -6,7 +6,8 @@
 proc newSimulator {options} {
 	#TODO: unset compile and elaborate
 
-	set $simulator [dict get $options SIMULATOR]
+	# Pull in the simulator choice from the options
+	set simulator [dict get $options SIMULATOR]
 
 	switch -nocase $simulator {
 		"ghdl"  {
@@ -46,7 +47,8 @@ proc c {} {
 		    }
 		} else {
 			mTclLog 0 "MTCL SIM - WARNING! - File missing $fname"
-
+			puts -nonewline "Press any key to continue... "
+			[gets stdin]
 		}
     }
 
@@ -81,7 +83,7 @@ proc r {} {
 }
 
 proc rr {} {
-	
+
 }
 
 #Exit current test bench
