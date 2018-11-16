@@ -20,5 +20,9 @@ dumpLists
 #Compile and simulate
 #-------------------------------
 source ../toolchains/simulators/simulator.tcl
+
+#Setup the simulation environment
 newSimulator $options
-cc
+
+#Compile the file list (incremental)
+c

@@ -15,7 +15,7 @@ proc newSimulator {options} {
 			source ../toolchains/simulators/ghdl/ghdl.tcl
 		}
 		defualt {
-			mTclLog 0 "MTCL SIM - ERROR - UNSUPPORTED SIMULATOR"
+			mTclLog 0 "MTCL SIM - ERROR - UNSUPPORTED SIMULATOR $simulator"
 		}
 	}
 }
