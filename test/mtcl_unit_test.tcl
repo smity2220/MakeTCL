@@ -4,7 +4,10 @@
 source ../make.tcl
 
 #Define our options 
-set options []
+set options [dict create \
+	ROOT_DIR			[ file dirname [ file normalize [ info script ] ] ] \
+	SIMULATOR 			"ghdl" \
+]
 
 #Generate the file list
 makeLists test.config $options

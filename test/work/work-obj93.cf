@@ -1,4 +1,0 @@
-v 3
-file "C:\Users\smity\sandbox\MakeTCL\test\" "test.vhd" "20181110193326.000" "20181110153216.498":
-  entity test at 1( 0) + 0 on 13;
-  architecture behaviour of test at 13( 200) + 0 on 14;

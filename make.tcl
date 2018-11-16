@@ -10,7 +10,7 @@ proc setMTclLogLvl {lvl} {
     set LOG_LVL $lvl
 }
 proc mTclLog {lvl msg} {
-    if {$lvl >= [getMTclLogLvl]} {puts $msg}
+    if {$lvl <= [getMTclLogLvl]} {puts $msg}
 }
 
 # --------------------------------------------------
@@ -86,7 +86,7 @@ proc makeLists {cfgFile options} {
                 mTclLog 0 "MTCL - RECURSION ERROR - already called $fname"
             } else {
                 #Recursively call makeLists if we find a new .config file
-                mTclLog 0 "MTCL - Found a new .config file $fname"
+                mTclLog 1 "MTCL - Found a new .config file $fname"
                 makeLists $fname $options
             }
         } else {
@@ -100,7 +100,7 @@ proc makeLists {cfgFile options} {
     # mTclLog 0 "MTCL - Merging $items from $cfgFile"
     # set MTCL_SRC_LIST [dict merge $MTCL_SRC_LIST $local_src_list]
 
-    mTclLog 0 "MTCL - Exiting  .config file $cfgFile"  
+    mTclLog 1 "MTCL - Exiting  .config file $cfgFile"  
 }
 
 proc dumpList {l header} {
