@@ -5,8 +5,10 @@ set ghdlCmd "$ghdlPath/ghdl.exe"
 proc compile {file library {args ""}} {
     global ghdlCmd
     file mkdir work
+    # exec "$ghdlCmd" -a --workdir=$library $file
     if {[catch {exec "$ghdlCmd" -a --workdir=$library $file}]} {
-        mTclLog 0 "MTCL ERROR - ghdl compile - $ghdlCmd -a --workdir=$library $file"
+        mTclLog 1 "MTCL ERROR - ghdl compile - $ghdlCmd -a --workdir=$library $file"
+        mTclLog 0 "MTCL ERROR - ghdl compile - $::errorInfo"
         return false
     }
     return true
@@ -15,17 +17,18 @@ proc compile {file library {args ""}} {
 proc elaborate {tb library {args ""}} {
     global ghdlCmd
     if {[catch {exec "$ghdlCmd" -e --workdir=$library $tb}]} {
-        mTclLog 0 "MTCL ERROR - ghdl elaborate - $ghdlCmd -e --workdir=$library $tb"
+        mTclLog 1 "MTCL ERROR - ghdl elaborate - $ghdlCmd -e --workdir=$library $tb"
+        mTclLog 0 "MTCL ERROR - ghdl elaborate - $::errorInfo"
         return false
     }
     return true
 }
 
 proc run {tb {time}} {
-    set cmd "ghdl -r $tb"
-    mTclLog 0 "ghdl run - $cmd"
-    if {[catch {exec $cmd}]} {
-        mTclLog 0 "MTCL ERROR - ghdl run - $cmd"
+    global ghdlCmd
+    if {[catch {exec "$ghdlCmd" -r $tb}]} {
+        mTclLog 0 "MTCL ERROR - ghdl run - $ghdlCmd -r $tb"
+        mTclLog 0 "MTCL ERROR - ghdl run - $::errorInfo"
         return false
     }
     return true

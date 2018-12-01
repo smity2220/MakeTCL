@@ -10,7 +10,7 @@ entity test is
   );
 end entity;
 
-architecture behaviour of test is
+architecture rtl of test is
 begin
   -- Clock process definition
   clk_process: process
@@ -20,4 +20,4 @@ begin
     clk <= '1';
     wait for clk_period/2;
   end process;
-end behaviour;
+end rtl;
