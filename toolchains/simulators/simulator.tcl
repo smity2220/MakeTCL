@@ -14,6 +14,10 @@ proc newSimulator {options} {
             #TODO: abstract path to tool chains
             source ../toolchains/simulators/ghdl/ghdl.tcl
         }
+        "modelsim" - "questasim"  {
+            #TODO: abstract path to tool chains
+            source ../toolchains/simulators/mentor/mentor.tcl
+        }
         defualt {
             mTclLog 0 "MTCL SIM - ERROR - UNSUPPORTED SIMULATOR $simulator"
         }
@@ -78,7 +82,12 @@ global currTb
 proc ltb {tb {args ""}} {
     global currTb
     set currTb $tb
-    elaborate $tb $args
+
+    #Library lookup
+    global MTCL_TB_LIST
+    set lib [dict get $MTCL_TB_LIST $tb]
+
+    elaborate $tb $lib $args
 }
 
 proc r {{time "-all"}} {

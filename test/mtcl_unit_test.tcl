@@ -6,7 +6,7 @@ source ../make.tcl
 #Define our options 
 set options [dict create \
     ROOT_DIR            [ file dirname [ file normalize [ info script ] ] ] \
-    SIMULATOR           "ghdl" \
+    SIMULATOR           "modelsim" \
     SYNTHESIZER         "vivado" \
     SYNTH_MAJOR_VER     0 \
     SYNTH_MINOR_VER     0 \
