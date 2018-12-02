@@ -2,7 +2,7 @@ set ghdlPath "C:/Program Files (x86)/Ghdl/bin"
 global ghdlCmd
 set ghdlCmd "$ghdlPath/ghdl.exe"
 
-proc compile {file library {args ""}} {
+proc simCompile {file library {args ""}} {
     global ghdlCmd
     file mkdir work
     # exec "$ghdlCmd" -a --workdir=$library $file
@@ -14,7 +14,7 @@ proc compile {file library {args ""}} {
     return true
 }
 
-proc elaborate {tb library {args ""}} {
+proc simElaborate {tb library {args ""}} {
     global ghdlCmd
     if {[catch {exec "$ghdlCmd" -e --workdir=$library $tb}]} {
         mTclLog 1 "MTCL ERROR - ghdl elaborate - $ghdlCmd -e --workdir=$library $tb"
@@ -24,7 +24,7 @@ proc elaborate {tb library {args ""}} {
     return true
 }
 
-proc run {tb {time}} {
+proc simRun {tb {time}} {
     global ghdlCmd
     if {[catch {exec "$ghdlCmd" -r $tb}]} {
         mTclLog 0 "MTCL ERROR - ghdl run - $ghdlCmd -r $tb"

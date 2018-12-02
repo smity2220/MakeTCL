@@ -28,6 +28,8 @@ proc newSimulator {options} {
 proc c {} {
     global MTCL_SRC_LIST
 
+    mTclLog 0 "MTCL - simulator - got here"
+
     # Check to see if there is already a saved compile time
     if {[file exists "LAST_COMPILE_TIME"]} {
         set fp [open "LAST_COMPILE_TIME" r]
@@ -42,10 +44,10 @@ proc c {} {
         if {[file exists $fname]} {
             # Check to see if the file was modified since the last compile
             set fileMtime [file mtime $fname] 
-            mTclLog 10 "File modified time = $fileMtime"
-            mTclLog 10 "MTCL LAST_COMPILE_TIME = $LAST_COMPILE_TIME"
+            mTclLog 0 "File modified time = $fileMtime"
+            mTclLog 0 "MTCL LAST_COMPILE_TIME = $LAST_COMPILE_TIME"
             if {[file mtime $fname] > $LAST_COMPILE_TIME} {
-                if {[compile $fname $lib]} {
+                if {[simCompile $fname $lib]} {
                     mTclLog 0 "MTCL SIM - compiled $fname into $lib"
                 } 
             }
@@ -59,7 +61,7 @@ proc c {} {
 
     # Get current time in seconds
     set LAST_COMPILE_TIME [clock seconds]
-    mTclLog 10 "MTCL SIM - finished compilation @ $LAST_COMPILE_TIME"
+    mTclLog 0 "MTCL SIM - finished compilation @ $LAST_COMPILE_TIME"
     # Save our compile time to a file
     set fp [open "LAST_COMPILE_TIME" "w"]
     puts -nonewline $fp $LAST_COMPILE_TIME
@@ -87,16 +89,16 @@ proc ltb {tb {args ""}} {
     global MTCL_TB_LIST
     set lib [dict get $MTCL_TB_LIST $tb]
 
-    elaborate $tb $lib $args
+    simElaborate $tb $lib $args
 }
 
-proc r {{time "-all"}} {
+proc r {{time ""}} {
     global currTb
-    run $currTb $time
+    simRun $currTb $time
 }
 
 proc rst {} {
-    restart
+    simRestart
 }
 
 proc rr {} {
