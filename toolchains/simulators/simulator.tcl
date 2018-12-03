@@ -35,6 +35,8 @@ proc h {} {
     mTclLog 0 [format $formatStr "rst"      "Reset Simulation"]
     mTclLog 0 [format $formatStr "r <time>" "Run Simulation"]
     mTclLog 0 [format $formatStr "rr"       "Reset and Run"]
+    mTclLog 0 [format $formatStr "q"        "Exit the current simulation"]
+    mTclLog 0 [format $formatStr "qq"       "Exit the simulator"]
 
     #Call the tool chain specific help
     simHelp{}

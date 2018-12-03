@@ -13,7 +13,7 @@ set vsimCmd "$toolPath/vsim.exe"
 global BATCH_MODE
 # Need to find a command to try to execute that would only exist in 
 # the tool console. We can do a try catch on it to set the mode.
-set BATCH_MODE true
+set BATCH_MODE false
 
 proc simHelp {} {
     
@@ -60,13 +60,13 @@ proc simCompile {file library {args ""}} {
 
     #Compile file into library
     if {$BATCH_MODE} {
-        if {[catch {exec "$vcomCmd" -work $library $file}]} {
-            mTclLog 1 "MTCL ERROR - mentor compile - $vcomCmd -work $library $file"
+        if {[catch {exec "$vcomCmd" -quiet -work $library $file}]} {
+            mTclLog 1 "MTCL ERROR - mentor compile - $vcomCmd -quiet -work $library $file"
             mTclLog 0 "MTCL ERROR - mentor compile - $::errorInfo"
             return false
         }
     } else {
-        mTclLog 0 "vcom $mentor_sim_args -work $library $file"
+        mTclLog 0 "vcom $mentor_sim_args -quiet -work $library $file"
         vcom $mentor_sim_args -quiet -work $library $file 
     }
     return true

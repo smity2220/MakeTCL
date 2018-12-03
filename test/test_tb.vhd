@@ -23,6 +23,7 @@ begin
   process is
   begin
     wait for 10 us;
+    report "simulation finished";
     stop;
   end process;
 
