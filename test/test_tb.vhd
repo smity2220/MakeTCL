@@ -1,3 +1,6 @@
+library std;
+    use std.env.all;
+
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -14,10 +17,10 @@ begin
   generic map (
     clk_period => 2 ns             ) -- time := 4 ns);
   port map (
-    clk        => clk              -- out std_logic 
+    clk        => clk                -- out std_logic 
   );
 
-  process (all) is
+  process is
   begin
     wait for 10 us;
     stop;

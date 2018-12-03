@@ -24,11 +24,27 @@ proc newSimulator {options} {
     }
 }
 
+proc h {} {
+    set formatStr "%-20s%-15s"
+    mTclLog 0 "--------------------------------------------------------------------------"
+    mTclLog 0 [format $formatStr "COMMAND" "DESCRIPTION"] 
+    mTclLog 0 "--------------------------------------------------------------------------"
+    mTclLog 0 [format $formatStr "c"        "Incremental Re-compile"]
+    mTclLog 0 [format $formatStr "cc"       "Full Re-compile"]
+    mTclLog 0 [format $formatStr "ltb"      "Load Test Bench"]
+    mTclLog 0 [format $formatStr "rst"      "Reset Simulation"]
+    mTclLog 0 [format $formatStr "r <time>" "Run Simulation"]
+    mTclLog 0 [format $formatStr "rr"       "Reset and Run"]
+
+    #Call the tool chain specific help
+    simHelp{}
+}
+
 #Incremental Re-compile
 proc c {} {
     global MTCL_SRC_LIST
 
-    mTclLog 0 "MTCL - simulator - got here"
+    set start_compile_time [clock seconds]
 
     # Check to see if there is already a saved compile time
     if {[file exists "LAST_COMPILE_TIME"]} {
@@ -40,14 +56,16 @@ proc c {} {
     }
 
     foreach fname [dict keys $MTCL_SRC_LIST] {
-        set lib [dict get $MTCL_SRC_LIST $fname]
+        set lib_options [dict get $MTCL_SRC_LIST $fname]
+        set lib [lindex $lib_options 0]
+        set args [lreplace $lib_options 0 0]
         if {[file exists $fname]} {
             # Check to see if the file was modified since the last compile
             set fileMtime [file mtime $fname] 
-            mTclLog 0 "File modified time = $fileMtime"
-            mTclLog 0 "MTCL LAST_COMPILE_TIME = $LAST_COMPILE_TIME"
+            mTclLog 1000 "File modified time = $fileMtime"
+            mTclLog 1000 "MTCL LAST_COMPILE_TIME = $LAST_COMPILE_TIME"
             if {[file mtime $fname] > $LAST_COMPILE_TIME} {
-                if {[simCompile $fname $lib]} {
+                if {[simCompile $fname $lib $args]} {
                     mTclLog 0 "MTCL SIM - compiled $fname into $lib"
                 } 
             }
@@ -61,7 +79,8 @@ proc c {} {
 
     # Get current time in seconds
     set LAST_COMPILE_TIME [clock seconds]
-    mTclLog 0 "MTCL SIM - finished compilation @ $LAST_COMPILE_TIME"
+    set compile_duration [expr $start_compile_time-[clock seconds]]
+    mTclLog 0 "MTCL SIM - finished compilation @ $LAST_COMPILE_TIME took $compile_duration seconds"
     # Save our compile time to a file
     set fp [open "LAST_COMPILE_TIME" "w"]
     puts -nonewline $fp $LAST_COMPILE_TIME

@@ -13,8 +13,11 @@ set vsimCmd "$toolPath/vsim.exe"
 global BATCH_MODE
 # Need to find a command to try to execute that would only exist in 
 # the tool console. We can do a try catch on it to set the mode.
-set BATCH_MODE false
+set BATCH_MODE true
 
+proc simHelp {} {
+    
+}
 
 proc simCompile {file library {args ""}} {
     global BATCH_MODE
@@ -22,32 +25,38 @@ proc simCompile {file library {args ""}} {
     global vlibCmd
     global vmapCmd
 
-    mTclLog 0 "MTCL - mentor got here"
-    file mkdir work
-
     #Create library if it doesn't exists
-    if {$BATCH_MODE} {
-        if {[catch {exec "$vlibCmd" $library}]} {
-            mTclLog 0 "MTCL ERROR - mentor - $vlibCmd $library"
-            mTclLog 0 "MTCL ERROR - mentor - $::errorInfo"
-            return false
+    if {![file isdirectory $library]} {
+        file mkdir work
+        if {$BATCH_MODE} {
+            if {[catch {exec "$vlibCmd" $library}]} {
+                mTclLog 0 "MTCL ERROR - mentor - $vlibCmd $library"
+                mTclLog 0 "MTCL ERROR - mentor - $::errorInfo"
+                return false
+            }
+        } else {
+            vlib $library
         }
-    } else {
-        # vlib $library
+
+        #Map if needed
+        if {$BATCH_MODE} {
+            if {[catch {exec "$vmapCmd" $library $library}]} {
+                mTclLog 0 "MTCL ERROR - mentor - $vmapCmd $library $library"
+                mTclLog 0 "MTCL ERROR - mentor - $::errorInfo"
+                return false
+            }
+        } else {
+            vmap $library $library
+        }
     }
 
-    #Map if needed
-    if {$BATCH_MODE} {
-        if {[catch {exec "$vmapCmd" $library $library}]} {
-            mTclLog 0 "MTCL ERROR - mentor - $vmapCmd $library $library"
-            mTclLog 0 "MTCL ERROR - mentor - $::errorInfo"
-            return false
-        }
+    set mentor_sim_args ""
+    #Check the args to see if this tool supports any options
+    if {[lsearch $args "VHDL_2008"] >= 0} {
+        lappend mentor_sim_args "-2008"
     } else {
-        # vmap $library $library
+        lappend mentor_sim_args "-93"
     }
-
-    #TODO: Detect VHDL 2008 property
 
     #Compile file into library
     if {$BATCH_MODE} {
@@ -57,7 +66,8 @@ proc simCompile {file library {args ""}} {
             return false
         }
     } else {
-        vcom -work $library $file
+        mTclLog 0 "vcom $mentor_sim_args -work $library $file"
+        vcom $mentor_sim_args -quiet -work $library $file 
     }
     return true
 }
@@ -72,7 +82,11 @@ proc simElaborate {tb library {args ""}} {
     global vsimCmd
     global BATCH_MODE
     if {$BATCH_MODE} {
-        # Elaboration happens in the run phase when in batch mode.
+        if {[catch {exec "$vsimCmd" -c $library.$tb -do "run -all; quit"}]} {
+            mTclLog 1 "MTCL ERROR - mentor elaborate - $vsimCmd -c $library.$tb -do run -all; quit"
+            mTclLog 0 "MTCL ERROR - mentor elaborate - $::errorInfo"
+            return false
+        }
     } else {
         vsim $library.$tb
     }
@@ -83,11 +97,7 @@ proc simRun {tb {time ""}} {
     global vsimCmd
     global BATCH_MODE
     if {$BATCH_MODE} {
-        if {[catch {exec "$vsimCmd" -c $library.$tb -do "run -all; quit"}]} {
-            mTclLog 1 "MTCL ERROR - mentor elaborate - $vsimCmd -c $library.$tb -do run -all; quit"
-            mTclLog 0 "MTCL ERROR - mentor elaborate - $::errorInfo"
-            return false
-        }
+        # Elaboration executes the run phase when in batch mode.
     } else {
         if {$time == ""} {
             run -all

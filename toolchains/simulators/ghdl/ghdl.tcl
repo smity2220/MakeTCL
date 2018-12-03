@@ -2,6 +2,14 @@ set ghdlPath "C:/Program Files (x86)/Ghdl/bin"
 global ghdlCmd
 set ghdlCmd "$ghdlPath/ghdl.exe"
 
+proc simHelp {} {
+    # set helpList [dict create \
+    #     VENDOR     "xilinx"\
+    #     FAMILY     "7series"\
+    # ]
+    # return $optList
+}
+
 proc simCompile {file library {args ""}} {
     global ghdlCmd
     file mkdir work
