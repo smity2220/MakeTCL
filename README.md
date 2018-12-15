@@ -48,3 +48,6 @@ VENDOR FILE                                                 LIBARAY
 unisim.vhd                                                  unisim
 xpm.vhd                                                     xpm
 ```
+
+# Sockets
+A basic utility socket server client pair is under development. It is expected to be used to bridge between the main TCL shell and vendor TCL shells when the vendor tool doesn't support a batch mode.
