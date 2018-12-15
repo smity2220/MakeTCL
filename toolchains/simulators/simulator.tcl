@@ -26,6 +26,7 @@ proc newSimulator {options} {
 
 proc h {} {
     set formatStr "%-20s%-15s"
+    mTclLog 0 [simVersion]
     mTclLog 0 "--------------------------------------------------------------------------"
     mTclLog 0 [format $formatStr "COMMAND" "DESCRIPTION"] 
     mTclLog 0 "--------------------------------------------------------------------------"
@@ -39,7 +40,7 @@ proc h {} {
     mTclLog 0 [format $formatStr "qq"       "Exit the simulator"]
 
     #Call the tool chain specific help
-    simHelp{}
+    simHelp
 }
 
 #Incremental Re-compile

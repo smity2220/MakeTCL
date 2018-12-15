@@ -13,10 +13,36 @@ set vsimCmd "$toolPath/vsim.exe"
 global BATCH_MODE
 # Need to find a command to try to execute that would only exist in 
 # the tool console. We can do a try catch on it to set the mode.
-set BATCH_MODE false
+set BATCH_MODE true
+
+# NEW INFO
+# Use the batch_mode command to verify that you are in Command Line Mode. stdout returns
+# “1” if you specify batch_mode while you are in Command Line Mode (vsim -c) or Batch Mode
+# (vsim -batch). 
+
+# vsim -c counter <infile >outfile
+
+
+proc simVersion {} {
+    global BATCH_MODE
+    global vsimCmd
+    set version 0
+    #Echo the simulator version
+    if {$BATCH_MODE} {
+        if {[catch {exec "$vsimCmd" -version}]} {
+            mTclLog 0 "MTCL ERROR - mentor - $::errorInfo"
+        } else {
+            set version [exec "$vsimCmd" -version]
+        }
+    } else {
+        set version [vsim -version]
+    }
+    # mTclLog 0 "version = $version"
+    # lsearch -inline [split $version " "] {vsim}
+    return $version
+}
 
 proc simHelp {} {
-    
 }
 
 proc simCompile {file library {args ""}} {
@@ -82,7 +108,11 @@ proc simElaborate {tb library {args ""}} {
     global vsimCmd
     global BATCH_MODE
     if {$BATCH_MODE} {
-        if {[catch {exec "$vsimCmd" -c $library.$tb -do "run -all; quit"}]} {
+        # UPDATE
+        #   Using the stdout redirection capabilities of "exec" is close to what I want,
+        # though it still isn't perfect as it does jump you into a new TCL shell.
+        #     if {[catch {exec "$vsimCmd" -c $library.$tb >@stdout}]} 
+        if {[catch {exec "$vsimCmd" -c $library.$tb -do "run -all; quit" >@stdout}]} { 
             mTclLog 1 "MTCL ERROR - mentor elaborate - $vsimCmd -c $library.$tb -do run -all; quit"
             mTclLog 0 "MTCL ERROR - mentor elaborate - $::errorInfo"
             return false
@@ -98,6 +128,7 @@ proc simRun {tb {time ""}} {
     global BATCH_MODE
     if {$BATCH_MODE} {
         # Elaboration executes the run phase when in batch mode.
+        run -all
     } else {
         if {$time == ""} {
             run -all
@@ -112,3 +143,36 @@ proc simRun {tb {time ""}} {
 proc simRestart {} {
     restart -f
 }
+
+proc simQuit {} {
+    quit
+}
+
+proc simExit {} {
+    quit -f
+}
+
+
+
+# vsim -c counter <infile >outfile
+
+# if {[catch {exec "$vsimCmd" -c -do socket_client.tcl >@stdout &}]} {
+    # puts "ERROR"
+# }
+
+# THIS IS JUST AN IDEA - check to see if we are running in batch mode. If so
+# then start the socket_client?
+# if {[catch batch_mode]} {
+#    puts "not in modelsim batch mode" 
+# } else {
+#     source socket_client.tcl
+# }
+
+
+
+# socket -server accept 12345   ;# pick your own port number...
+# proc accept {channel host port} {
+#     exec [info nameofexecutable] realScript.tcl \
+#             <@$channel >@$channel 2>@$channel &
+# }
+# vwait forever                 ;# run the event loop to serve sockets...
