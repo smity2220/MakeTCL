@@ -39,7 +39,7 @@ proc handleComm {S} {
         set closed true
         exit
     } else {
-        puts "FROM SERVER - $rxStr"
+        # puts "FROM SERVER - $rxStr"
         # catch {eval $rxStr}
         catch {uplevel #0 $rxStr} result
         # send the result back to the server
@@ -66,23 +66,25 @@ proc StdinRead {} {
     }
     append command(line) [gets stdin]
     if [info complete $command(line)] {
-        if {$closed} {
+        # if {$closed} {
             catch {uplevel #0 $command(line)} result
-            puts "$result"
+            # puts "I'm the client - $result"
             flush stdout
-        } else {
-            sockSend $command(line)
-        }
+        # } else {
+        #     sockSend $command(line)
+        # }
         set command(line) {}
     }
 }
 
 # Link our stdin handler to the event
-fileevent stdin readable StdinRead
+# fileevent stdin readable StdinRead
 
 
 #Test code
 sockSend "hi there"
+
+# puts "this is the client"
 
 #Wait for the server to tell us to close
 vwait $closed

@@ -30,7 +30,7 @@ proc handleComm {S} {
      	# exit
     } else {
  		# Just print responses from the client
- 		puts "FROM CLIENT - $rxStr"
+ 		# puts "FROM CLIENT - $rxStr"
  		# eval $rxStr
  	}
 }
@@ -45,6 +45,9 @@ proc accept {chan addr port} {
     fconfigure $chan -buffering line     
 
     puts "$addr:$port connected"
+
+    #Test code
+	# sockSend "hi there"
               
     # set up to handle incoming data when necessary
     fileevent $chan readable [list handleComm $chan]          
@@ -70,13 +73,13 @@ proc StdinRead {} {
 	}
 	append command(line) [gets stdin]
 	if [info complete $command(line)] {
-        if {$closed} {
+        # if {$closed} {
             catch {uplevel #0 $command(line)} result
             puts "$result"
             flush stdout
-        } else {
-            sockSend $command(line)
-        }
+        # } else {
+        #     sockSend $command(line)
+        # }
 		flush stdout
 		set command(line) {}
 	}
@@ -89,10 +92,13 @@ fileevent stdin readable StdinRead
 socket -server accept 54321
 
 #Wait for the client to come back and say they are closing
-vwait $closed
+proc serverVwait {} {
+	global closed
+	vwait $closed
+}
 
 #Clear our handler of stdin
-fileevent $stdin readable {}
+# fileevent $stdin readable {}
 
 
 # socket -server accept 12345   ;# pick your own port number...
