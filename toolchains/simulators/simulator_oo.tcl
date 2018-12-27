@@ -8,16 +8,29 @@ oo::class create Simulator {
     constructor {mtcl} {
         # set MTCL_OBJ $mtcl
 
-        # method getOptList  {} {return OPT_LIST}
+        set MTCL_OPT_LIST [$mtcl getOptList]
         set MTCL_SRC_LIST [$mtcl getSrcList]
         # method getCfgList  {} {return CFG_LIST}
         set MTCL_TB_LIST  [$mtcl getTbList]
         # method getVlibList {} {return VLIB_LIST}
         set log           [$mtcl getLogger]
 
+        # Pull in the simulator choice from the options
+        set simulator [dict get $MTCL_OPT_LIST SIMULATOR]
+        switch -nocase $simulator {
+            "ghdl"  {
+                #TODO: abstract path to tool chains
+                source ../toolchains/simulators/ghdl/ghdl.tcl
+            }
+            "modelsim" - "questasim"  {
+                #TODO: abstract path to tool chains
+                source ../toolchains/simulators/mentor/mentor.tcl
+            }
+            defualt {
+                $log print 0 "MTCL SIM - ERROR - UNSUPPORTED SIMULATOR $simulator"
+            }
+        }
 
-        # Check the options to see what simulator to use
-        
     }
     destructor {
         $log destroy
@@ -26,8 +39,6 @@ oo::class create Simulator {
 
     #Incremental Re-compile
     method c {} {
-        # global MTCL_SRC_LIST
-
         set start_compile_time [clock seconds]
 
         # Check to see if there is already a saved compile time

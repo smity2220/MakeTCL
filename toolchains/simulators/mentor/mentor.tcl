@@ -30,12 +30,12 @@ if {[catch {batch_mode}]} {
 proc mentorExec {cmd} {
     global SOCKET_MODE
     if {$SOCKET_MODE} {
-        # mTclLog 0 "Send this cmd over the socket - $cmd"
+        # puts "Send this cmd over the socket - $cmd"
         sockSend $cmd
     } else {
         # Run it locally.
         if {[catch {exec {*}$cmd}]} {
-            mTclLog 0 "MTCL ERROR - mentor - $::errorInfo"
+            puts "MTCL ERROR - mentor - $::errorInfo"
         }
     }
 }
@@ -47,14 +47,14 @@ proc simVersion {} {
     #Echo the simulator version
     if {$BATCH_MODE} {
         if {[catch {exec "$vsimCmd" -version}]} {
-            mTclLog 0 "MTCL ERROR - mentor - $::errorInfo"
+            puts "MTCL ERROR - mentor - $::errorInfo"
         } else {
             set version [exec "$vsimCmd" -version]
         }
     } else {
         set version [vsim -version]
     }
-    # mTclLog 0 "version = $version"
+    # puts "version = $version"
     # lsearch -inline [split $version " "] {vsim}
     return $version
 }
@@ -62,15 +62,15 @@ proc simVersion {} {
 proc simHelp {} {
     global BATCH_MODE
     if {$BATCH_MODE} {
-        mTclLog 0 "---------------------------------------"
-        mTclLog 0 "Welcome to batch mode with Mentor"
-        mTclLog 0 "  *useful information"
-        mTclLog 0 "---------------------------------------"
+        puts "---------------------------------------"
+        puts "Welcome to batch mode with Mentor"
+        puts "  *useful information"
+        puts "---------------------------------------"
     } else {
-        mTclLog 0 "---------------------------------------"
-        mTclLog 0 "Welcome to GUI mode with Mentor"
-        mTclLog 0 "  *useful information"
-        mTclLog 0 "---------------------------------------"
+        puts "---------------------------------------"
+        puts "Welcome to GUI mode with Mentor"
+        puts "  *useful information"
+        puts "---------------------------------------"
     }
 }
 
@@ -86,8 +86,8 @@ proc simCompile {file library {args ""}} {
         file mkdir work
         # if {$BATCH_MODE} {
         #     if {[catch {exec "$vlibCmd" $library}]} {
-        #         mTclLog 0 "MTCL ERROR - mentor - $vlibCmd $library"
-        #         mTclLog 0 "MTCL ERROR - mentor - $::errorInfo"
+        #         puts "MTCL ERROR - mentor - $vlibCmd $library"
+        #         puts "MTCL ERROR - mentor - $::errorInfo"
         #         return false
         #     }
         # } else {
@@ -98,8 +98,8 @@ proc simCompile {file library {args ""}} {
         #Map if needed
         # if {$BATCH_MODE} {
         #     if {[catch {exec "$vmapCmd" $library $library}]} {
-        #         mTclLog 0 "MTCL ERROR - mentor - $vmapCmd $library $library"
-        #         mTclLog 0 "MTCL ERROR - mentor - $::errorInfo"
+        #         puts "MTCL ERROR - mentor - $vmapCmd $library $library"
+        #         puts "MTCL ERROR - mentor - $::errorInfo"
         #         return false
         #     }
         # } else {
@@ -133,9 +133,9 @@ proc simCompile {file library {args ""}} {
         ".tcl" {
             # TCL files are special in that we just dive right in and source them
             # instead of passing through exec
-            mTclLog 0 "MTCL - SIM - sourcing $filename"
+            puts "MTCL - SIM - sourcing $filename"
             if {[catch {source $filename}]} {
-                mTclLog 0 "MTCL ERROR - sourcing - $::errorInfo"
+                puts "MTCL ERROR - sourcing - $::errorInfo"
                 return false    
             }
             return true
@@ -147,11 +147,11 @@ proc simCompile {file library {args ""}} {
     # if {$BATCH_MODE} {
     #     # Use TCL list expansion {*} to pass the command string in as a list of arguments for exec
     #     if {[catch {exec {*}$cmd_str}]} {
-    #         mTclLog 0 "MTCL ERROR - mentor compile - $::errorInfo"
+    #         puts "MTCL ERROR - mentor compile - $::errorInfo"
     #         return false
     #     }
     # } else {
-    #     # mTclLog 0 "$cmd_str"
+    #     # puts "$cmd_str"
     #     eval {*}$cmd_str
     # }
     mentorExec $cmd_str
@@ -181,7 +181,7 @@ proc simElaborate {tb library {args ""}} {
     #     # set cmd_str "$vsimCmd -c $library.$tb -do ../toolchains/simulators/simulator.tcl" 
     #     if {[catch {exec {*}$cmd_str >@stdout}]} { 
     #         # mTclLog 1 "MTCL ERROR - mentor elaborate - $vsimCmd -c $library.$tb -do run -all; quit"
-    #         mTclLog 0 "MTCL ERROR - mentor elaborate - $::errorInfo"
+    #         puts "MTCL ERROR - mentor elaborate - $::errorInfo"
     #         return false
     #     }
     # } else {
@@ -207,7 +207,7 @@ proc simRun {tb {time ""}} {
     # }
 
     # if {[catch {$cmd_str}]} {
-    #     mTclLog 0 "No TB loaded! Load a test bench \"ltb\" <tb name>"
+    #     puts "No TB loaded! Load a test bench \"ltb\" <tb name>"
     # }
     mentorExec $cmd_str
     return true
@@ -217,7 +217,7 @@ proc simRun {tb {time ""}} {
 proc simRestart {} {
     # restart -f
     # if {[catch {restart -f}]} {
-    #     mTclLog 0 "No TB loaded! Load a test bench \"ltb\" <tb name>"
+    #     puts "No TB loaded! Load a test bench \"ltb\" <tb name>"
     # }
     mentorExec "restart -f"
 }
@@ -226,7 +226,7 @@ proc simRestart {} {
 proc simQuit {} {
     # quit
     # if {[catch {quit}]} {
-    #     mTclLog 0 "No TB loaded! Load a test bench \"ltb\" <tb name>"
+    #     puts "No TB loaded! Load a test bench \"ltb\" <tb name>"
     # }
     mentorExec "quit"
 }
@@ -246,22 +246,22 @@ proc simExit {} {
 
 set SOCKET_MODE $BATCH_MODE
 if {$SOCKET_MODE} {
-    mTclLog 0 "MTCL - Starting Server"
+    puts "MTCL - Starting Server"
     source ../toolchains/utility/socket/socket_server.tcl
 
-    mTclLog 0 "MTCL - Starting Modelsim Client"
+    puts "MTCL - Starting Modelsim Client"
     set cmd_str "$vsimCmd -c -do ../toolchains/utility/socket/socket_client.tcl"
 
     # >@stdout
     # if {[catch {exec {*}$cmd_str &}]} {
-    #     mTclLog 0 "MTCL ERROR - launching socket client - $::errorInfo"
+    #     puts "MTCL ERROR - launching socket client - $::errorInfo"
     #     # return false
     # }
 
     # Launch the simulator in the background and start up the socket client.
     eval {exec {*}$cmd_str >@stdout &}
 
-    mTclLog 0 "MTCL - Entering Server Event Loop"
+    puts "MTCL - Entering Server Event Loop"
     serverVwait
 }
 

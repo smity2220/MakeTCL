@@ -33,17 +33,23 @@ source ../toolchains/simulators/simulator_oo.tcl
 set sim [Simulator new $test_file_list]
 
 #Compile the file list (incremental)
-$sim c
+# $sim c
+alias c "$sim c"
+c
 
 #Load the test bench
-$sim ltb test_tb
+# $sim ltb test_tb
+alias ltb "$sim ltb"
+ltb test_tb
 
 # #Run the test bench
 # $sim r
+alias r "$sim r"
+r
 
 # #Print a summary of all test bench results
 # # $sim dumpTbScores
 
 puts "cleaning up oo_test"
 
-$test_file_list destroy
+# $test_file_list destroy
