@@ -247,7 +247,11 @@ proc simExit {} {
 set SOCKET_MODE $BATCH_MODE
 if {$SOCKET_MODE} {
     puts "MTCL - Starting Server"
-    source ../toolchains/utility/socket/socket_server.tcl
+    # source ../toolchains/utility/socket/socket_server.tcl
+    source ../toolchains/utility/socket/socket_server_oo.tcl
+
+    # Create a new Socket Server
+    set ss [SocketServer new]
 
     puts "MTCL - Starting Modelsim Client"
     set cmd_str "$vsimCmd -c -do ../toolchains/utility/socket/socket_client.tcl"
@@ -262,7 +266,7 @@ if {$SOCKET_MODE} {
     eval {exec {*}$cmd_str >@stdout &}
 
     puts "MTCL - Entering Server Event Loop"
-    serverVwait
+    $ss serverVwait
 }
 
 
