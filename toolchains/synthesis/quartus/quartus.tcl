@@ -1,9 +1,47 @@
+set quartusPath "C:/intelFPGA_pro/18.1/quartus/bin64"
+global quartusCmd
+set quartusCmd "$quartusPath/qpro_sh.exe"
 
 mTclLog 0 "MTCL QUARTUS currently supports the following versions... none"
 
-proc newProj {} {
-	# -overwrite
-	project_new $PROJECT_NAME -revision $PLATFORM
+# https://www.intel.com/content/www/us/en/programmable/documentation/sbv1513989262284.html
+
+# quartus_sh [-h | --help[=<option|topic>] | -v]
+# quartus_sh -g | --gui [<project_name>]
+# quartus_sh <other options>
+# quartus_sh -t <script file> [<script args>]
+# quartus_sh -s
+# quartus_sh --tcl_eval <tcl command>
+
+# The question is, how do we launch the tool? Options are:
+# *Use the -s for the interactive shell
+#   - This has the classic problem with spawning a new shell.  
+# *Use the --tcl_eval to do each command individually.
+# *Use the -t and & to call the socket client
+
+proc newQuaruts {options} {
+	set MTCL_DIR    [dict get $options MTCL_DIR]
+
+	# Start the socket server
+	source $MTCL_DIR/toolchains/utility/socket/socket_server.tcl
+
+	# Open Quartus and start the socket client
+	if {[catch {exec "$quartusCmd" -t $MTCL_DIR/toolchains/utility/socket/socket_client.tcl &}]} {
+		puts "socket client error!"
+	}
+
+}
+
+
+proc newProj {platform} {
+	global quartusCmd
+	# exec "$quartusCmd" >@stdout
+	# if {[catch {exec "$quartusCmd" -t ../../utility/socket/socket_client.tcl >@stdout}]} {
+	# 	puts "newProj error"
+	# } else {
+			# -overwrite
+		project_new "test_proj_name" -revision $platform
+	# }
 }
 
 proc addToProj {src_list} {

@@ -4,6 +4,7 @@
 #Options from the makeTcl layer will define what simulator we link to.
 proc newSynthesizer {options} {
     # Pull in the simulator choice from the options
+    set MTCL_DIR    [dict get $options MTCL_DIR]
     set synthesizer [dict get $options SYNTHESIZER]
     set major_ver   [dict get $options SYNTH_MAJOR_VER]
     set minor_ver   [dict get $options SYNTH_MINOR_VER]
@@ -11,11 +12,12 @@ proc newSynthesizer {options} {
     # -glob?
     switch -nocase $synthesizer {
         "quartus"  {
-            #TODO: abstract path to tool chains
-            source ../toolchains/synthesis/quartus/quartus.tcl
+            source $MTCL_DIR/toolchains/synthesis/quartus/quartus.tcl
+            newQuaruts $options
         }
         "vivado" {
-            source ../toolchains/synthesis/vivado/vivado.tcl
+            source $MTCL_DIR/toolchains/synthesis/vivado/vivado.tcl
+            # TODO: newVivado $options
         }
         defualt {
             mTclLog 0 "MTCL SYNTH - ERROR - UNSUPPORTED SYNTHESIZER $synthesizer"
@@ -33,6 +35,8 @@ proc newSynthesizer {options} {
         # ... stuff
     # OR a new tool chain file for each version?
         # source "vivado_$major_ver\_$minor_ver\.tcl"
+
+    # new
 }
 
 # 
@@ -55,17 +59,17 @@ proc createProj {options} {
     newProj $platform
 
     # Add the files to the project
-    foreach fname [dict keys $MTCL_SRC_LIST] {
-        set lib [dict get $MTCL_SRC_LIST $fname]
-        if {[file exists $fname]} {
-            if {[addToProj $fname $lib]} {
-                mTclLog 1 "MTCL SYNTH - Added $fname into $lib"
-            } 
-        } else {
-            mTclLog 0 "MTCL SYNTH - ERROR! - File missing $fname"
-            return
-        }
-    }   
+    # foreach fname [dict keys $MTCL_SRC_LIST] {
+    #     set lib [dict get $MTCL_SRC_LIST $fname]
+    #     if {[file exists $fname]} {
+    #         if {[addToProj $fname $lib]} {
+    #             mTclLog 1 "MTCL SYNTH - Added $fname into $lib"
+    #         } 
+    #     } else {
+    #         mTclLog 0 "MTCL SYNTH - ERROR! - File missing $fname"
+    #         return
+    #     }
+    # }   
 
 }
 
