@@ -49,5 +49,10 @@ unisim.vhd                                                  unisim
 xpm.vhd                                                     xpm
 ```
 
+# Object Oriented Design
+The layered architecture of this scripting environment lends itself to OO design. At the time of writing, OO versions of most of the files have been created along side the original structured code. I'm expecting to support both styles for a time but will probably deprecate the structured code as soon as I grow tired of attempting to support both. 
+
 # Sockets
-A basic utility socket server client pair is under development. It is expected to be used to bridge between the main TCL shell and vendor TCL shells when the vendor tool doesn't support a batch mode.
+A basic utility socket server client pair is under development. It is expected to be used to bridge between the main TCL shell and vendor TCL shells when the vendor tool doesn't support a batch mode. An OO version of the socket server was a recent addition. The client will always remain in its simple structured form.
+
+So far testing shows promise and my in-fact prove to be a nice way to standardize the interfaces to all tools.
