@@ -2,6 +2,10 @@
 #This layer will make calls down to the appropriate simulator tool
 #chain in order to do file compilation.
 
+if {$argc > 0} {
+    puts "we have args = $arcc"
+}
+
 #Options from the makeTcl layer will define what simulator we link to.
 proc newSimulator {options} {
     #TODO: unset compile and elaborate
