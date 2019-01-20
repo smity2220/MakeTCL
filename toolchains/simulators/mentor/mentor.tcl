@@ -10,6 +10,9 @@ set vmapCmd "$toolPath/vmap.exe"
 global vsimCmd
 set vsimCmd "$toolPath/vsim.exe"
 
+global ss
+set ss ""
+
 # Check to see if we are currently running in a mentor tool
 # shell or if we are in batch mode.
 global BATCH_MODE
@@ -29,9 +32,10 @@ if {[catch {batch_mode}]} {
 
 proc mentorExec {cmd} {
     global SOCKET_MODE
+    global ss
     if {$SOCKET_MODE} {
         # puts "Send this cmd over the socket - $cmd"
-        sockSend $cmd
+        $ss send $cmd
     } else {
         # Run it locally.
         if {[catch {exec {*}$cmd}]} {
@@ -234,8 +238,9 @@ proc simQuit {} {
 # GUI mode only?
 proc simExit {} {
     global SOCKET_MODE
+    global ss
     if {$SOCKET_MODE} {
-        sockSend "close"
+        $ss send "close"
     } else {
         quit -f
     }
@@ -267,6 +272,7 @@ if {$SOCKET_MODE} {
 
     puts "MTCL - Entering Server Event Loop"
     $ss serverVwait
+    puts "Connection established - moving on"
 }
 
 

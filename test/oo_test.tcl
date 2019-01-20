@@ -28,23 +28,24 @@ $test_file_list dumpLists
 #-------------------------------
 source ../toolchains/simulators/simulator_oo.tcl
 
-#Setup the simulation environment
-# newSimulator $options
+puts "Setup the simulation environment"
 set sim [Simulator new $test_file_list]
 
-#Compile the file list (incremental)
-# $sim c
-alias c "$sim c"
+# Get back to simple commands for the HMI
+interp alias {} c {} $sim c
+interp alias {} cc {} $sim cc
+interp alias {} ltb {} $sim ltb
+interp alias {} ltb {} $sim r
+interp alias {} q {} $sim q
+interp alias {} qq {} $sim qq
+
+puts "Compile the file list (incremental)"
 c
 
-#Load the test bench
-# $sim ltb test_tb
-alias ltb "$sim ltb"
+puts "Load the test bench"
 ltb test_tb
 
-# #Run the test bench
-# $sim r
-alias r "$sim r"
+puts "Run the test bench"
 r
 
 # #Print a summary of all test bench results

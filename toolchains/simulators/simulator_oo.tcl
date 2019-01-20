@@ -4,6 +4,7 @@ oo::class create Simulator {
     variable MTCL_SRC_LIST
     variable MTCL_TB_LIST
     variable log
+    variable currTb
 
     constructor {mtcl} {
         # set MTCL_OBJ $mtcl
@@ -93,10 +94,9 @@ oo::class create Simulator {
         my c
     }
 
-    global currTb
     #Load Test Bench
     method ltb {tb {args ""}} {
-        global currTb
+        my variable currTb
         set currTb $tb
 
         #Library lookup
@@ -106,7 +106,7 @@ oo::class create Simulator {
     }
 
     method r {{time ""}} {
-        global currTb
+        my variable currTb
         simRun $currTb $time
     }
 

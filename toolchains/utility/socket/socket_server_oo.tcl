@@ -3,15 +3,20 @@ oo::class create SocketServer {
 
     variable sock
     variable closed
+    variable connected
     variable command
 
     #Wait for the client to come back and say they are closing
     method serverVwait {} {
-        vwait $closed
+        my variable connected
+        puts "waiting for event"
+        vwait [my varname connected]
     }
 
     # Handler for socket traffic
     method handleComm {} {
+        my variable sock
+        my variable closed
         # global closed
         set rxStr [gets $sock]
         switch -exact -- $rxStr { 
@@ -40,7 +45,9 @@ oo::class create SocketServer {
     }
 
     # Accept connections
-    method accept {chan addr port} {   
+    method accept {chan addr port} {
+        my variable sock
+        my variable connected 
         # Save the channel to the sock variable for this instance
         set sock $chan
 
@@ -51,6 +58,9 @@ oo::class create SocketServer {
 
         #Test code
         # send "hi there"
+
+        set connected true
+        puts "accept - connected = $connected"
                   
         # set up to handle incoming data when necessary
         fileevent $sock readable [list [self object] handleComm]
@@ -58,6 +68,7 @@ oo::class create SocketServer {
 
     # Utility for pushing data over the socket
     method send {cmd} {
+        my variable sock
         # Push the string over the sock channel
         puts $sock $cmd
         flush $sock
@@ -86,7 +97,10 @@ oo::class create SocketServer {
     }
 
     constructor {{port 54321}} {
-        set closed    false
+        my variable closed
+        my variable connected
+        set closed false
+        set connected false
 
         # Link our stdin handler to the event
         fileevent stdin readable [list [self] stdinReadHdlr]
