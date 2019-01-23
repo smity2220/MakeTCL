@@ -49,7 +49,11 @@ proc handleComm {S} {
         # catch {eval $rxStr}
         catch {uplevel #0 $rxStr} result
         # send the result back to the server
-        sockSend "$result"
+        # puts "CLIENT - done running command $rxStr"
+        # sockSend "$result"
+        
+        # Send something back to the server to ack that we are done
+        sockSend "CLIENT - done running command $rxStr"
     }
 }
 
@@ -88,7 +92,7 @@ proc StdinRead {} {
 
 
 #Test code
-sockSend "hi there"
+# sockSend "hi there"
 
 # puts "this is the client"
 

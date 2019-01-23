@@ -35,7 +35,7 @@ proc mentorExec {cmd} {
     global ss
     if {$SOCKET_MODE} {
         # puts "Send this cmd over the socket - $cmd"
-        $ss send $cmd
+        $ss send $cmd true
     } else {
         # Run it locally.
         if {[catch {exec {*}$cmd}]} {

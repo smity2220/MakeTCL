@@ -4,6 +4,7 @@ oo::class create SocketServer {
     variable sock
     variable closed
     variable connected
+    variable ack
     variable command
 
     #Wait for the client to come back and say they are closing
@@ -17,6 +18,7 @@ oo::class create SocketServer {
     method handleComm {} {
         my variable sock
         my variable closed
+        my variable ack
         # global closed
         set rxStr [gets $sock]
         switch -exact -- $rxStr { 
@@ -40,7 +42,8 @@ oo::class create SocketServer {
         } else {
             # Just print responses from the client
             # puts "FROM CLIENT - $rxStr"
-            # eval $rxStr
+            # Increment ack to trigger events. Use the absolute variable name
+            incr [my varname ack]
         }
     }
 
@@ -67,11 +70,17 @@ oo::class create SocketServer {
     } 
 
     # Utility for pushing data over the socket
-    method send {cmd} {
+    method send {cmd {blocking false}} {
         my variable sock
+        my variable ack
         # Push the string over the sock channel
         puts $sock $cmd
         flush $sock
+        if {$blocking} {
+            # puts "  waiting for ack event"
+            vwait [my varname ack]
+            # puts "  ACK'D"
+        }
     }
 
     # Handler for stdin events
@@ -99,8 +108,10 @@ oo::class create SocketServer {
     constructor {{port 54321}} {
         my variable closed
         my variable connected
+        my variable ack
         set closed false
         set connected false
+        set ack 0
 
         # Link our stdin handler to the event
         fileevent stdin readable [list [self] stdinReadHdlr]
