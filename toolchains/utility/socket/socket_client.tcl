@@ -15,6 +15,11 @@ proc sockSend {cmd} {
 # Handler for socket traffic
 proc handleComm {S} {
     global closed
+
+    if {[eof $S]} {
+        close $S
+        exit
+    }
     set rxStr [gets $S]
     # puts "$rxStr"
     # puts "message of length $rxStr recieved" 
@@ -23,8 +28,9 @@ proc handleComm {S} {
             #the connection was closed 
             #on the other end so close our side 
             puts "closing connection to $dns_addr $port on read eof" 
-            close $S 
-            return 
+            close $S
+            exit 
+            # return 
         } 
         0 { 
             #ignore empty messages 
