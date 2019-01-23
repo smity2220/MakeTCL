@@ -35,7 +35,9 @@ set sim [Simulator new $test_file_list]
 interp alias {} c {} $sim c
 interp alias {} cc {} $sim cc
 interp alias {} ltb {} $sim ltb
-interp alias {} ltb {} $sim r
+interp alias {} r {} $sim r
+interp alias {} rr {} $sim rr
+interp alias {} rst {} $sim rst
 interp alias {} q {} $sim q
 interp alias {} qq {} $sim qq
 
@@ -43,6 +45,9 @@ puts "Compile the file list (incremental)"
 c
 
 puts "Load the test bench"
+# TODO - SOCKET: This needs to turn into a "blocking" socket exchange. Currently 
+#				 we issue the ltb then the r right after and the simulator will 
+#				 never have the tb loaded in time to be ready for the r (run). 
 ltb test_tb
 
 puts "Run the test bench"
@@ -52,5 +57,4 @@ r
 # # $sim dumpTbScores
 
 puts "cleaning up oo_test"
-
 # $test_file_list destroy

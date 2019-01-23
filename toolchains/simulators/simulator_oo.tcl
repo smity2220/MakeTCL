@@ -4,7 +4,7 @@ oo::class create Simulator {
     variable MTCL_SRC_LIST
     variable MTCL_TB_LIST
     variable log
-    variable currTb
+    variable curr_tb
 
     constructor {mtcl} {
         # set MTCL_OBJ $mtcl
@@ -96,8 +96,8 @@ oo::class create Simulator {
 
     #Load Test Bench
     method ltb {tb {args ""}} {
-        my variable currTb
-        set currTb $tb
+        my variable curr_tb
+        set curr_tb $tb
 
         #Library lookup
         set lib [dict get $MTCL_TB_LIST $tb]
@@ -106,8 +106,8 @@ oo::class create Simulator {
     }
 
     method r {{time ""}} {
-        my variable currTb
-        simRun $currTb $time
+        my variable curr_tb
+        simRun $curr_tb $time
     }
 
     method rst {} {
@@ -115,17 +115,17 @@ oo::class create Simulator {
     }
 
     method rr {} {
-        rst
-        r
+        my rst
+        my r
     }
 
     #Exit current test bench
     method q {} {
-
+        simQuit
     }
 
     #Exit simulator
     method qq {} {
-
+        simExit
     }
 }
