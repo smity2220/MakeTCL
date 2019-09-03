@@ -3,12 +3,13 @@ oo::class create Simulator {
     variable LAST_COMPILE_TIME 
     variable MTCL_SRC_LIST
     variable MTCL_TB_LIST
+    variable MTCL_DIR
     variable log
     variable curr_tb
 
-    constructor {mtcl} {
+    constructor {mtcl mtcl_opt} {
         # set MTCL_OBJ $mtcl
-
+        set MTCL_DIR      [dict get $mtcl_opt MTCL_DIR]
         set MTCL_OPT_LIST [$mtcl getOptList]
         set MTCL_SRC_LIST [$mtcl getSrcList]
         # method getCfgList  {} {return CFG_LIST}
@@ -21,11 +22,11 @@ oo::class create Simulator {
         switch -nocase $simulator {
             "ghdl"  {
                 #TODO: abstract path to tool chains
-                source ../toolchains/simulators/ghdl/ghdl.tcl
+                source $MTCL_DIR/toolchains/simulators/ghdl/ghdl.tcl
             }
             "modelsim" - "questasim"  {
                 #TODO: abstract path to tool chains
-                source ../toolchains/simulators/mentor/mentor.tcl
+                source $MTCL_DIR/toolchains/simulators/mentor/mentor.tcl
             }
             defualt {
                 $log print 0 "MTCL SIM - ERROR - UNSUPPORTED SIMULATOR $simulator"
@@ -128,4 +129,13 @@ oo::class create Simulator {
     method qq {} {
         simExit
     }
+
+    # method simVersion {} {}
+    # method simHelp {} {}
+    # method simCompile {file library {args ""}} {}
+    # method simElaborate {tb library {args ""}} {}
+    # method simRun {tb {time ""}} {}
+    # method simRestart {} {}
+    # method simQuit {} {}
+    # method simExit {} {}
 }

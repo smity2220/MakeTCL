@@ -36,20 +36,31 @@ oo::class create MTcl {
     variable log
 
     # root 
-    constructor {cfgFile options} {
+    constructor {cfgFile cfgFileList options} {
         # set ROOT_DIR $root
         # set OPTIONS $options
 
         set OPT_LIST []
         set SRC_LIST []
         set CFG_LIST []
+        set CFG_LIST $cfgFileList
         set TB_LIST []
         set VLIB_LIST []
 
         set log [Logger new 0]
 
-        $log print 0 "MTCL - Entering .config file $cfgFile"
-        set OPT_LIST $options 
+        $log print 1 "MTCL - Entering .config file $cfgFile"
+
+        set PWD [dict get $options ROOT_DIR]
+        set CWD $PWD
+        append CWD "/" [file dirname $cfgFile]
+        set CWD [file normalize $CWD]
+
+        set OPT_LIST $options
+        dict unset OPT_LIST ROOT_DIR
+        dict set OPT_LIST ROOT_DIR $CWD
+        
+        $log print 1 "MTCL - Setting ROOT_DIR to [dict get $OPT_LIST ROOT_DIR]"
 
         #Remove any previous definitions of the MTCL api procs
         # unset -nocomplain MTCL_OPT
@@ -58,13 +69,14 @@ oo::class create MTcl {
         # unset -nocomplain MTCL_VLIB
 
         #Source the .config file safely
-        if {[catch {source $cfgFile}]} {
-            puts "MTCL ERROR SOURCING $cfgFile!"
+        set cfgFile [file tail $cfgFile]
+        if {[catch {source $CWD/$cfgFile}]} {
+            $log print 0 "MTCL - ERROR SOURCING $CWD/$cfgFile!"
             return
         }
         #Add the current .config file name to the list of files
         #processed. This is used to detect recursion errors.
-        lappend CFG_LIST $cfgFile
+        lappend CFG_LIST [file normalize $CWD/$cfgFile]
 
         #Merge in the latest options. Must be done first as 
         #the options might change how the lists return
@@ -91,25 +103,39 @@ oo::class create MTcl {
         foreach fname [dict keys $local_src_list] {
             set opts [dict get $local_src_list $fname]
             if {[file extension $fname] == ".config"} {
-                if {[lsearch -exact $CFG_LIST $fname] >= 0} {
+                if {[lsearch -exact $CFG_LIST [file normalize $CWD/$fname] ] >= 0} {
                     $log print 0 "MTCL - RECURSION ERROR - already called $fname"
                 } else {
                     #Recursively call makeLists if we find a new .config file
-                    $log print 1 "MTCL - Found a new .config file $fname"
-                    makeLists $fname $options
+                    $log print 0 "MTCL - Found a new .config file $fname"
+                    set recursive_oo [MTcl new $fname $CFG_LIST $OPT_LIST]
+
+                    #not sure how to check for recursive presence of cfg files in post recursive format
+                    #this instance needs to know what config files have come before.
+                    set OPT_LIST  [dict merge $OPT_LIST  [$recursive_oo getOptList] ]
+                    set SRC_LIST  [dict merge $SRC_LIST  [$recursive_oo getSrcList] ]
+                    set TB_LIST   [dict merge $TB_LIST   [$recursive_oo getTbList] ]
+                    set VLIB_LIST [dict merge $VLIB_LIST [$recursive_oo getVlibList] ]
+                    set CFG_LIST                         [$recursive_oo getCfgList]
                 }
             } else {
                 #Add the non .config file to the master list
-                dict append SRC_LIST $fname $opts
+                set fullfname $CWD/$fname
+                if {![dict exists $SRC_LIST $fullfname]} {
+                    dict set SRC_LIST $fullfname $opts
+                } else {
+                    $log print 0 "MTCL - Skipping add of existing file: $fname in $CWD"
+                }
             }
         }
-
-
+        
         # set items [dict size $local_src_list]
         # $log print 0 "MTCL - Merging $items from $cfgFile"
         # set SRC_LIST [dict merge $SRC_LIST $local_src_list]
 
-        $log print 1 "MTCL - Exiting  .config file $cfgFile" 
+        $log print 1 "MTCL - Exiting  .config file $cfgFile"
+        dict set OPT_LIST ROOT_DIR $PWD
+        $log print 1 "MTCL - ReSetting ROOT_DIR to [dict get $OPT_LIST ROOT_DIR]"
     }
 
     destructor {
@@ -143,7 +169,7 @@ oo::class create MTcl {
         $log print 0 "--------------------------------------------------------------------------"
         foreach key [dict keys $d] {
             set value [dict get $d $key]
-            $log print 0 [format $formatStr "$key" "$value"] 
+            $log print 0 [format $formatStr [file tail $key] "$value"] 
         }
     }
 

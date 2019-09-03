@@ -1,16 +1,19 @@
 #-------------------------------
 #Create a file list
 #-------------------------------
-source ../make.tcl
+set MTCL_DIR ".."
 
 #Define our options 
 set options [dict create \
     ROOT_DIR            [ file dirname [ file normalize [ info script ] ] ] \
+    MTCL_DIR            "$MTCL_DIR" \
     SIMULATOR           "modelsim" \
     SYNTHESIZER         "vivado" \
     SYNTH_MAJOR_VER     0 \
     SYNTH_MINOR_VER     0 \
 ]
+
+source $MTCL_DIR/make.tcl
 
 #Generate the file list
 makeLists test.config $options

@@ -2,22 +2,24 @@ if {[catch {Simulator destroy}]} {}
 if {[catch {Logger destroy}]} {}
 if {[catch {MTcl destroy}]} {}
 
+set MTCL_DIR ".."
 
 #-------------------------------
 #Create a file list
 #-------------------------------
-source ../make_oo.tcl
+source $MTCL_DIR/make_oo.tcl
 
 #Define our options 
 set options [dict create \
     ROOT_DIR            [ file dirname [ file normalize [ info script ] ] ] \
+    MTCL_DIR            $MTCL_DIR \
     SIMULATOR           "modelsim" \
     SYNTHESIZER         "vivado" \
     SYNTH_MAJOR_VER     0 \
     SYNTH_MINOR_VER     0 \
 ]
 
-set test_file_list [MTcl new test.config $options]
+set test_file_list [MTcl new test.config [] $options]
 
 $test_file_list dumpLists
 
@@ -26,10 +28,10 @@ $test_file_list dumpLists
 #-------------------------------
 #Simulate
 #-------------------------------
-source ../toolchains/simulators/simulator_oo.tcl
+source $MTCL_DIR/toolchains/simulators/simulator_oo.tcl
 
 puts "Setup the simulation environment"
-set sim [Simulator new $test_file_list]
+set sim [Simulator new "$test_file_list" "$options"]
 
 # Get back to simple commands for the HMI
 interp alias {} c {} $sim c
@@ -57,4 +59,4 @@ r
 # # $sim dumpTbScores
 
 puts "cleaning up oo_test"
-# $test_file_list destroy
+$test_file_list destroy

@@ -1,14 +1,39 @@
-set toolPath "C:/intelFPGA_pro/18.1/modelsim_ase/win32aloem"
+if {$::tcl_platform(platform) == "windows"} {
+    set exeExtension ".exe"
+    set pathSeparator ";"
+} else {
+    set exeExtension ""
+    set pathSeparator ":"
+}
+
 global vcomCmd
-set vcomCmd "$toolPath/vcom.exe"
 global vlogCmd
-set vlogCmd "$toolPath/vlog.exe"
 global vlibCmd
-set vlibCmd "$toolPath/vlib.exe"
 global vmapCmd
-set vmapCmd "$toolPath/vmap.exe"
 global vsimCmd
-set vsimCmd "$toolPath/vsim.exe"
+
+set vcomCmd "vcom$exeExtension"
+set vlogCmd "vlog$exeExtension"
+set vlibCmd "vlib$exeExtension"
+set vmapCmd "vmap$exeExtension"
+set vsimCmd "vsim$exeExtension"
+# set ::env(MODELSIM) [pwd]
+
+#need to separate PATH on : character
+set PATH $::env(PATH)
+foreach dirName [split $PATH $pathSeparator] {
+    if {[file exists $dirName/$vcomCmd]} {
+        puts "Using $dirName as toolPath."
+        set toolPath [file normalize $dirName]
+        break
+    }
+}
+
+set vcomCmd $toolPath/$vcomCmd
+set vlogCmd $toolPath/$vlogCmd
+set vlibCmd $toolPath/$vlibCmd
+set vmapCmd $toolPath/$vmapCmd
+set vsimCmd $toolPath/$vsimCmd
 
 global ss
 set ss ""
@@ -16,18 +41,39 @@ set ss ""
 # Check to see if we are currently running in a mentor tool
 # shell or if we are in batch mode.
 global BATCH_MODE
+set BATCH_MODE 0
 # Use the batch_mode command to verify that you are in Command Line Mode. stdout returns
 # “1” if you specify batch_mode while you are in Command Line Mode (vsim -c) or Batch Mode
 # (vsim -batch). 
 global SOCKET_MODE
-if {[catch {batch_mode}]} {
-    puts "setting BATCH_MODE to true"
-    set BATCH_MODE true
-} else {
-    puts "setting BATCH_MODE to false"
-    set BATCH_MODE false
-}
 
+global GUI_MODE
+
+if { ![info exists GUI_MODE] } {
+    set GUI_MODE 0
+    if {[catch {batch_mode}]} {
+        puts "setting BATCH_MODE to true"
+        # set BATCH_MODE true
+        set BATCH_MODE 1
+    } else {
+        puts "setting BATCH_MODE to false"
+        # set BATCH_MODE false
+        set BATCH_MODE 0
+    }
+} else {
+    if {$GUI_MODE==1} {
+        puts "in GUI_MODE"
+        set BATCH_MODE 0        
+    # } elseif {[catch {batch_mode}]} {
+    #     puts "setting BATCH_MODE to true"
+    #     # set BATCH_MODE true
+    #     set BATCH_MODE 1
+    } else {
+        puts "setting BATCH_MODE to false"
+        # set BATCH_MODE false
+        set BATCH_MODE 0
+    }
+}
 
 
 proc mentorExec {cmd} {
@@ -37,8 +83,9 @@ proc mentorExec {cmd} {
         # puts "Send this cmd over the socket - $cmd"
         $ss send $cmd true
     } else {
-        # Run it locally.
-        if {[catch {exec {*}$cmd}]} {
+        # puts "Run cmd locally - $cmd"
+        # Hmmm, i had to remove "exec" from in front of {*} to get it to work in GUI mode
+        if {[catch {{*}$cmd}]} {
             puts "MTCL ERROR - mentor - $::errorInfo"
         }
     }
@@ -86,8 +133,8 @@ proc simCompile {file library {args ""}} {
     global vmapCmd
 
     #Create library if it doesn't exists
-    if {![file isdirectory $library]} {
-        file mkdir work
+    if {![file isdirectory simlib/$library]} {
+        file mkdir simlib/$library
         # if {$BATCH_MODE} {
         #     if {[catch {exec "$vlibCmd" $library}]} {
         #         puts "MTCL ERROR - mentor - $vlibCmd $library"
@@ -97,7 +144,7 @@ proc simCompile {file library {args ""}} {
         # } else {
         #     vlib $library
         # }
-        mentorExec "vlib $library"
+        mentorExec "vlib simlib/$library"
 
         #Map if needed
         # if {$BATCH_MODE} {
@@ -109,7 +156,7 @@ proc simCompile {file library {args ""}} {
         # } else {
         #     vmap $library $library
         # }
-        mentorExec "vmap $library $library"
+        mentorExec "vmap $library simlib/$library"
     }
 
     set mentor_sim_args ""
@@ -192,6 +239,7 @@ proc simElaborate {tb library {args ""}} {
     #     vsim $library.$tb
     # }
     mentorExec "vsim $library.$tb"
+    mentorExec "add log -r /*"
     return true
 }
 
@@ -249,17 +297,40 @@ proc simExit {} {
 
 
 
-set SOCKET_MODE $BATCH_MODE
-if {$SOCKET_MODE} {
-    puts "MTCL - Starting Server"
+set SOCKET_MODE [expr $BATCH_MODE==1 || $GUI_MODE==1]
+if {$BATCH_MODE == 1} {
+    puts "MTCL - Starting Server in BATCH_MODE"
     # source ../toolchains/utility/socket/socket_server.tcl
-    source ../toolchains/utility/socket/socket_server_oo.tcl
+    source $::MTCL_DIR/toolchains/utility/socket/socket_server_oo.tcl
 
     # Create a new Socket Server
     set ss [SocketServer new]
 
     puts "MTCL - Starting Modelsim Client"
-    set cmd_str "$vsimCmd -c -do ../toolchains/utility/socket/socket_client.tcl"
+    set cmd_str "$vsimCmd -c -do $::MTCL_DIR/toolchains/utility/socket/socket_client.tcl"
+
+    # >@stdout
+    # if {[catch {exec {*}$cmd_str &}]} {
+    #     puts "MTCL ERROR - launching socket client - $::errorInfo"
+    #     # return false
+    # }
+
+    # Launch the simulator in the background and start up the socket client.
+    eval {exec {*}$cmd_str >@stdout &}
+
+    puts "MTCL - Entering Server Event Loop"
+    $ss serverVwait
+    puts "Connection established - moving on"
+} elseif {$GUI_MODE == 1} {
+    puts "MTCL - Starting Server in BATCH_MODE"
+    # source ../toolchains/utility/socket/socket_server.tcl
+    source $::MTCL_DIR/toolchains/utility/socket/socket_server_oo.tcl
+
+    # Create a new Socket Server
+    set ss [SocketServer new]
+
+    puts "MTCL - Starting Modelsim Client"
+    set cmd_str "$vsimCmd -do {$::MTCL_DIR/toolchains/utility/socket/socket_client.tcl}"
 
     # >@stdout
     # if {[catch {exec {*}$cmd_str &}]} {

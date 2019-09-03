@@ -3,7 +3,7 @@
 #chain in order to do file compilation.
 
 if {$argc > 0} {
-    puts "we have args = $arcc"
+    puts "we have args = $argc"
 }
 
 #Options from the makeTcl layer will define what simulator we link to.
@@ -12,15 +12,16 @@ proc newSimulator {options} {
 
     # Pull in the simulator choice from the options
     set simulator [dict get $options SIMULATOR]
+    set MTCL_DIR      [dict get $options MTCL_DIR]
 
     switch -nocase $simulator {
         "ghdl"  {
             #TODO: abstract path to tool chains
-            source ../toolchains/simulators/ghdl/ghdl.tcl
+            source $MTCL_DIR/toolchains/simulators/ghdl/ghdl.tcl
         }
         "modelsim" - "questasim"  {
             #TODO: abstract path to tool chains
-            source ../toolchains/simulators/mentor/mentor.tcl
+            source $MTCL_DIR/toolchains/simulators/mentor/mentor.tcl
         }
         defualt {
             mTclLog 0 "MTCL SIM - ERROR - UNSUPPORTED SIMULATOR $simulator"

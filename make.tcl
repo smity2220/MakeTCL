@@ -33,14 +33,12 @@ set MTCL_VLIB_LIST []
 
 
 proc makeLists {cfgFile options} {
-    mTclLog 0 "MTCL - Entering .config file $cfgFile"
+
     global MTCL_CFG_LIST
     global MTCL_OPT_LIST
     global MTCL_SRC_LIST
     global MTCL_TB_LIST
     global MTCL_VLIB_LIST
-
-    set MTCL_OPT_LIST $options 
 
     #Remove any previous definitions of the MTCL api procs
     unset -nocomplain MTCL_OPT
@@ -48,14 +46,28 @@ proc makeLists {cfgFile options} {
     unset -nocomplain MTCL_TB
     unset -nocomplain MTCL_VLIB
 
+    mTclLog 1 "MTCL - Entering .config file $cfgFile"
+
+    set PWD [dict get $options ROOT_DIR]
+    set CWD $PWD
+    append CWD "/" [file dirname $cfgFile]
+    set CWD [file normalize $CWD]
+
+    set MTCL_OPT_LIST $options
+    dict unset MTCL_OPT_LIST ROOT_DIR
+    dict set MTCL_OPT_LIST ROOT_DIR $CWD
+
+    mTclLog 1 "MTCL - Setting ROOT_DIR to [dict get $MTCL_OPT_LIST ROOT_DIR]"
+
     #Source the .config file safely
-    if {[catch {source $cfgFile}]} {
-        puts "MTCL ERROR SOURCING $cfgFile!"
+    set cfgFile [file tail $cfgFile]
+    if {[catch {source $CWD/$cfgFile}]} {
+        mTclLog 0 "MTCL - ERROR SOURCING $CWD/$cfgFile!"
         return
     }
     #Add the current .config file name to the list of files
     #processed. This is used to detect recursion errors.
-    lappend MTCL_CFG_LIST $cfgFile
+    lappend MTCL_CFG_LIST [file normalize $CWD/$cfgFile]
 
     #Merge in the latest options. Must be done first as 
     #the options might change how the lists return
@@ -82,16 +94,21 @@ proc makeLists {cfgFile options} {
     foreach fname [dict keys $local_src_list] {
         set opts [dict get $local_src_list $fname]
         if {[file extension $fname] == ".config"} {
-            if {[lsearch -exact $MTCL_CFG_LIST $fname] >= 0} {
+            if {[lsearch -exact $MTCL_CFG_LIST [file normalize $CWD/$fname] ] >= 0} {
                 mTclLog 0 "MTCL - RECURSION ERROR - already called $fname"
             } else {
                 #Recursively call makeLists if we find a new .config file
-                mTclLog 1 "MTCL - Found a new .config file $fname"
-                makeLists $fname $options
+                mTclLog 0 "MTCL - Found a new .config file $fname"
+                makeLists $fname $MTCL_OPT_LIST
             }
         } else {
             #Add the non .config file to the master list
-            dict append MTCL_SRC_LIST $fname $opts
+            set fullfname $CWD/$fname
+            if {![dict exists $MTCL_SRC_LIST $fullfname]} {
+                    dict set MTCL_SRC_LIST $fullfname $opts
+                } else {
+                    mTclLog 0 "MTCL - Skipping add of existing file: $fname in $CWD"
+                }
         }
     }
 
@@ -100,7 +117,9 @@ proc makeLists {cfgFile options} {
     # mTclLog 0 "MTCL - Merging $items from $cfgFile"
     # set MTCL_SRC_LIST [dict merge $MTCL_SRC_LIST $local_src_list]
 
-    mTclLog 1 "MTCL - Exiting  .config file $cfgFile"  
+    mTclLog 1 "MTCL - Exiting  .config file $cfgFile"
+    dict set MTCL_OPT_LIST ROOT_DIR $PWD
+    mTclLog 1 "MTCL - ReSetting ROOT_DIR to [dict get $MTCL_OPT_LIST ROOT_DIR]"
 }
 
 proc dumpList {l header} {
@@ -118,7 +137,7 @@ proc dumpDict {d headers {formatStr "%-60s%-15s"}} {
     mTclLog 0 "--------------------------------------------------------------------------"
     foreach key [dict keys $d] {
         set value [dict get $d $key]
-        mTclLog 0 [format $formatStr "$key" "$value"] 
+        mTclLog 0 [format $formatStr [file tail $key] "$value"] 
     }
 }
 
