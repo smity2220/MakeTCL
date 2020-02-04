@@ -7,10 +7,10 @@ oo::class create Simulator {
     variable log
     variable curr_tb
 
-    constructor {mtcl mtcl_opt} {
+    constructor {mtcl} {
         # set MTCL_OBJ $mtcl
-        set MTCL_DIR      [dict get $mtcl_opt MTCL_DIR]
         set MTCL_OPT_LIST [$mtcl getOptList]
+        set MTCL_DIR      [dict get $MTCL_OPT_LIST MTCL_DIR]
         set MTCL_SRC_LIST [$mtcl getSrcList]
         # method getCfgList  {} {return CFG_LIST}
         set MTCL_TB_LIST  [$mtcl getTbList]

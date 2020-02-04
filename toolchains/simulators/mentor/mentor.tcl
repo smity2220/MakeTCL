@@ -301,13 +301,13 @@ set SOCKET_MODE [expr $BATCH_MODE==1 || $GUI_MODE==1]
 if {$BATCH_MODE == 1} {
     puts "MTCL - Starting Server in BATCH_MODE"
     # source ../toolchains/utility/socket/socket_server.tcl
-    source $::MTCL_DIR/toolchains/utility/socket/socket_server_oo.tcl
+    source $::env(MTCL_PATH)/toolchains/utility/socket/socket_server_oo.tcl
 
     # Create a new Socket Server
     set ss [SocketServer new]
 
     puts "MTCL - Starting Modelsim Client"
-    set cmd_str "$vsimCmd -c -do $::MTCL_DIR/toolchains/utility/socket/socket_client.tcl"
+    set cmd_str "$vsimCmd -c -do $::env(MTCL_PATH)/toolchains/utility/socket/socket_client.tcl"
 
     # >@stdout
     # if {[catch {exec {*}$cmd_str &}]} {
@@ -324,13 +324,13 @@ if {$BATCH_MODE == 1} {
 } elseif {$GUI_MODE == 1} {
     puts "MTCL - Starting Server in BATCH_MODE"
     # source ../toolchains/utility/socket/socket_server.tcl
-    source $::MTCL_DIR/toolchains/utility/socket/socket_server_oo.tcl
+    source $::env(MTCL_PATH)/toolchains/utility/socket/socket_server_oo.tcl
 
     # Create a new Socket Server
     set ss [SocketServer new]
 
     puts "MTCL - Starting Modelsim Client"
-    set cmd_str "$vsimCmd -do {$::MTCL_DIR/toolchains/utility/socket/socket_client.tcl}"
+    set cmd_str "$vsimCmd -do {$::env(MTCL_PATH)/toolchains/utility/socket/socket_client.tcl}"
 
     # >@stdout
     # if {[catch {exec {*}$cmd_str &}]} {

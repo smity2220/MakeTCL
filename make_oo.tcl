@@ -23,7 +23,7 @@ oo::class create Logger {
 
 oo::class create MTcl {
 
-    variable ROOT_DIR OPTIONS
+    variable OPTIONS
     # Main File Lists
     variable OPT_LIST
     variable SRC_LIST
@@ -37,12 +37,10 @@ oo::class create MTcl {
 
     # root 
     constructor {cfgFile cfgFileList options} {
-        # set ROOT_DIR $root
         # set OPTIONS $options
 
         set OPT_LIST []
         set SRC_LIST []
-        set CFG_LIST []
         set CFG_LIST $cfgFileList
         set TB_LIST []
         set VLIB_LIST []
@@ -51,22 +49,15 @@ oo::class create MTcl {
 
         $log print 1 "MTCL - Entering .config file $cfgFile"
 
-        set PWD [dict get $options ROOT_DIR]
-        set CWD $PWD
-        append CWD "/" [file dirname $cfgFile]
-        set CWD [file normalize $CWD]
+        set CWD [file normalize [file dirname $cfgFile]]
 
         set OPT_LIST $options
-        dict unset OPT_LIST ROOT_DIR
-        dict set OPT_LIST ROOT_DIR $CWD
-        
-        $log print 1 "MTCL - Setting ROOT_DIR to [dict get $OPT_LIST ROOT_DIR]"
 
         #Remove any previous definitions of the MTCL api procs
-        # unset -nocomplain MTCL_OPT
-        # unset -nocomplain MTCL_SRC
-        # unset -nocomplain MTCL_TB
-        # unset -nocomplain MTCL_VLIB
+        unset -nocomplain MTCL_OPT
+        unset -nocomplain MTCL_SRC
+        unset -nocomplain MTCL_TB
+        unset -nocomplain MTCL_VLIB
 
         #Source the .config file safely
         set cfgFile [file tail $cfgFile]
@@ -80,17 +71,19 @@ oo::class create MTcl {
 
         #Merge in the latest options. Must be done first as 
         #the options might change how the lists return
-        # if {info exists MTCL_OPT}  {
+        if {[expr {[llength [info procs MTCL_OPT]] > 0}]} {
             set OPT_LIST  [dict merge $OPT_LIST  [MTCL_OPT]]
-        # }
+        }
         #Merge in the test bench lists
-        # if {info exists MTCL_TB}   {
+        if {[expr {[llength [info procs MTCL_TB]] > 0}]} {
+            puts "merging TB_LIST"
             set TB_LIST   [dict merge $TB_LIST   [MTCL_TB $OPT_LIST]]
-        # }
+        }
+        puts "TB_LIST = $TB_LIST"
         #Merge in the vendor library lists
-        # if {info exists MTCL_VLIB} {
+        if {[expr {[llength [info procs MTCL_VLIB]] > 0}]} {
             set VLIB_LIST [dict merge $VLIB_LIST [MTCL_VLIB $OPT_LIST]]
-        # }
+        }
 
 
         #Save a copy of the source file list
@@ -134,8 +127,8 @@ oo::class create MTcl {
         # set SRC_LIST [dict merge $SRC_LIST $local_src_list]
 
         $log print 1 "MTCL - Exiting  .config file $cfgFile"
-        dict set OPT_LIST ROOT_DIR $PWD
-        $log print 1 "MTCL - ReSetting ROOT_DIR to [dict get $OPT_LIST ROOT_DIR]"
+        # dict set OPT_LIST ROOT_DIR $PWD
+        # $log print 1 "MTCL - ReSetting ROOT_DIR to [dict get $OPT_LIST ROOT_DIR]"
     }
 
     destructor {
