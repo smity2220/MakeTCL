@@ -38,43 +38,97 @@ set vsimCmd $toolPath/$vsimCmd
 global ss
 set ss ""
 
-# Check to see if we are currently running in a mentor tool
-# shell or if we are in batch mode.
-global BATCH_MODE
-set BATCH_MODE 0
-# Use the batch_mode command to verify that you are in Command Line Mode. stdout returns
-# “1” if you specify batch_mode while you are in Command Line Mode (vsim -c) or Batch Mode
-# (vsim -batch). 
-global SOCKET_MODE
+proc simOpen {GUI_MODE} {
+    global vcomCmd
+    global vlogCmd
+    global vlibCmd
+    global vmapCmd
+    global vsimCmd
+    # Check to see if we are currently running in a mentor tool
+    # shell or if we are in batch mode.
+    global BATCH_MODE
+    set BATCH_MODE 0
+    # Use the batch_mode command to verify that you are in Command Line Mode. stdout returns
+    # “1” if you specify batch_mode while you are in Command Line Mode (vsim -c) or Batch Mode
+    # (vsim -batch). 
+    global SOCKET_MODE
 
-global GUI_MODE
+    if { ![info exists GUI_MODE] } {
+        set GUI_MODE 0
+        if {[catch {batch_mode}]} {
+            puts "setting BATCH_MODE to true"
+            # set BATCH_MODE true
+            set BATCH_MODE 1
+        } else {
+            puts "setting BATCH_MODE to false"
+            # set BATCH_MODE false
+            set BATCH_MODE 0
+        }
+    } else {
+        if {$GUI_MODE==1} {
+            puts "in GUI_MODE"
+            set BATCH_MODE 0        
+        } elseif {[catch {batch_mode}]} {
+            puts "setting BATCH_MODE to true"
+            # set BATCH_MODE true
+            set BATCH_MODE 1
+        } else {
+            puts "setting BATCH_MODE to false"
+            # set BATCH_MODE false
+            set BATCH_MODE 0
+        }
+    }
 
-if { ![info exists GUI_MODE] } {
-    set GUI_MODE 0
-    if {[catch {batch_mode}]} {
-        puts "setting BATCH_MODE to true"
-        # set BATCH_MODE true
-        set BATCH_MODE 1
-    } else {
-        puts "setting BATCH_MODE to false"
-        # set BATCH_MODE false
-        set BATCH_MODE 0
+    set SOCKET_MODE [expr $BATCH_MODE==1 || $GUI_MODE==1]
+    if {$BATCH_MODE == 1} {
+        puts "MTCL - Starting Server in BATCH_MODE"
+        # source ../toolchains/utility/socket/socket_server.tcl
+        source $::env(MTCL_PATH)/toolchains/utility/socket/socket_server_oo.tcl
+
+        # Create a new Socket Server
+        set ss [SocketServer new]
+
+        puts "MTCL - Starting Modelsim Client"
+        set cmd_str "$vsimCmd -c -do $::env(MTCL_PATH)/toolchains/utility/socket/socket_client.tcl"
+
+        # >@stdout
+        # if {[catch {exec {*}$cmd_str &}]} {
+        #     puts "MTCL ERROR - launching socket client - $::errorInfo"
+        #     # return false
+        # }
+
+        # Launch the simulator in the background and start up the socket client.
+        eval {exec {*}$cmd_str >@stdout &}
+
+        puts "MTCL - Entering Server Event Loop"
+        $ss serverVwait
+        puts "Connection established - moving on"
+    } elseif {$GUI_MODE == 1} {
+        puts "MTCL - Starting Server in BATCH_MODE"
+        # source ../toolchains/utility/socket/socket_server.tcl
+        source $::env(MTCL_PATH)/toolchains/utility/socket/socket_server_oo.tcl
+
+        # Create a new Socket Server
+        set ss [SocketServer new]
+
+        puts "MTCL - Starting Modelsim Client"
+        set cmd_str "$vsimCmd -do {$::env(MTCL_PATH)/toolchains/utility/socket/socket_client.tcl}"
+
+        # >@stdout
+        # if {[catch {exec {*}$cmd_str &}]} {
+        #     puts "MTCL ERROR - launching socket client - $::errorInfo"
+        #     # return false
+        # }
+
+        # Launch the simulator in the background and start up the socket client.
+        eval {exec {*}$cmd_str >@stdout &}
+
+        puts "MTCL - Entering Server Event Loop"
+        $ss serverVwait
+        puts "Connection established - moving on"
     }
-} else {
-    if {$GUI_MODE==1} {
-        puts "in GUI_MODE"
-        set BATCH_MODE 0        
-    # } elseif {[catch {batch_mode}]} {
-    #     puts "setting BATCH_MODE to true"
-    #     # set BATCH_MODE true
-    #     set BATCH_MODE 1
-    } else {
-        puts "setting BATCH_MODE to false"
-        # set BATCH_MODE false
-        set BATCH_MODE 0
-    }
+
 }
-
 
 proc mentorExec {cmd} {
     global SOCKET_MODE
@@ -297,54 +351,6 @@ proc simExit {} {
 
 
 
-set SOCKET_MODE [expr $BATCH_MODE==1 || $GUI_MODE==1]
-if {$BATCH_MODE == 1} {
-    puts "MTCL - Starting Server in BATCH_MODE"
-    # source ../toolchains/utility/socket/socket_server.tcl
-    source $::env(MTCL_PATH)/toolchains/utility/socket/socket_server_oo.tcl
-
-    # Create a new Socket Server
-    set ss [SocketServer new]
-
-    puts "MTCL - Starting Modelsim Client"
-    set cmd_str "$vsimCmd -c -do $::env(MTCL_PATH)/toolchains/utility/socket/socket_client.tcl"
-
-    # >@stdout
-    # if {[catch {exec {*}$cmd_str &}]} {
-    #     puts "MTCL ERROR - launching socket client - $::errorInfo"
-    #     # return false
-    # }
-
-    # Launch the simulator in the background and start up the socket client.
-    eval {exec {*}$cmd_str >@stdout &}
-
-    puts "MTCL - Entering Server Event Loop"
-    $ss serverVwait
-    puts "Connection established - moving on"
-} elseif {$GUI_MODE == 1} {
-    puts "MTCL - Starting Server in BATCH_MODE"
-    # source ../toolchains/utility/socket/socket_server.tcl
-    source $::env(MTCL_PATH)/toolchains/utility/socket/socket_server_oo.tcl
-
-    # Create a new Socket Server
-    set ss [SocketServer new]
-
-    puts "MTCL - Starting Modelsim Client"
-    set cmd_str "$vsimCmd -do {$::env(MTCL_PATH)/toolchains/utility/socket/socket_client.tcl}"
-
-    # >@stdout
-    # if {[catch {exec {*}$cmd_str &}]} {
-    #     puts "MTCL ERROR - launching socket client - $::errorInfo"
-    #     # return false
-    # }
-
-    # Launch the simulator in the background and start up the socket client.
-    eval {exec {*}$cmd_str >@stdout &}
-
-    puts "MTCL - Entering Server Event Loop"
-    $ss serverVwait
-    puts "Connection established - moving on"
-}
 
 
 

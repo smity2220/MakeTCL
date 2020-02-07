@@ -13,10 +13,10 @@ proc simHelp {} {
 proc simCompile {file library {args ""}} {
     global ghdlCmd
     file mkdir work
-    # exec "$ghdlCmd" -a --workdir=$library $file
-    if {[catch {exec "$ghdlCmd" -a --workdir=$library $file}]} {
-        mTclLog 1 "MTCL ERROR - ghdl compile - $ghdlCmd -a --workdir=$library $file"
-        mTclLog 0 "MTCL ERROR - ghdl compile - $::errorInfo"
+    set ghdlArgs "-a -fpsl --ieee=standard --workdir=$library $file"
+    if {[catch {exec "$ghdlCmd" {*}$ghdlArgs}]} {
+        # puts "MTCL ERROR - ghdl compile - $ghdlCmd $ghdlArgs"
+        puts "MTCL ERROR - ghdl compile - '$ghdlArgs' \n\t$::errorInfo"
         return false
     }
     return true
@@ -25,8 +25,8 @@ proc simCompile {file library {args ""}} {
 proc simElaborate {tb library {args ""}} {
     global ghdlCmd
     if {[catch {exec "$ghdlCmd" -e --workdir=$library $tb}]} {
-        mTclLog 1 "MTCL ERROR - ghdl elaborate - $ghdlCmd -e --workdir=$library $tb"
-        mTclLog 0 "MTCL ERROR - ghdl elaborate - $::errorInfo"
+        puts "MTCL ERROR - ghdl elaborate - $ghdlCmd -e --workdir=$library $tb"
+        puts "MTCL ERROR - ghdl elaborate - $::errorInfo"
         return false
     }
     return true
@@ -35,8 +35,8 @@ proc simElaborate {tb library {args ""}} {
 proc simRun {tb {time}} {
     global ghdlCmd
     if {[catch {exec "$ghdlCmd" -r $tb}]} {
-        mTclLog 0 "MTCL ERROR - ghdl run - $ghdlCmd -r $tb"
-        mTclLog 0 "MTCL ERROR - ghdl run - $::errorInfo"
+        puts "MTCL ERROR - ghdl run - $ghdlCmd -r $tb"
+        puts "MTCL ERROR - ghdl run - $::errorInfo"
         return false
     }
     return true

@@ -8,6 +8,9 @@ set options {
     {oo.arg "1"                 "Object Oriented Environment"}
     {t.arg ""                   "Test Bench"}
     {f.arg ""                   "Config File"}
+    {tool.arg "modelsim"        "Simulator"}
+    {major_ver.arg "0"          "Simulator Major Version"}
+    {minor_ver.arg "0"          "Simulator Minor Version"}
 }
     # {r.arg "$::argv0"           "Root Path (Defaults to $::argv0)"}
     # {m.arg "$::env(MTCL_PATH)"  "MTCL Path (Defaults to $::env(MTCL_PATH))"}
@@ -42,11 +45,11 @@ puts "MTCL Setup - CONFIG_FILE = $CONFIG_FILE"
 set options [dict create \
     WORK_DIR            $WORK_DIR \
     MTCL_DIR            $::env(MTCL_PATH) \
-    SIMULATOR           "modelsim" \
-    SYNTHESIZER         "vivado" \
-    SYNTH_MAJOR_VER     0 \
-    SYNTH_MINOR_VER     0 \
+    SIMULATOR           $params(tool) \
+    SIM_MAJOR_VER       $params(major_ver) \
+    SIM_MINOR_VER       $params(minor_ver) \
 ]
+    # SYNTHESIZER         "vivado" 
 
 #-------------------------------
 #Setup the MTCL environment
@@ -79,9 +82,9 @@ cd $WORK_DIR
 #-------------------------------
 if {$params(oo) == 1} {
     puts "Setup the oo simulation environment"
+    puts "gui = $params(g)"
     source $::env(MTCL_PATH)/toolchains/simulators/simulator_oo.tcl
-    puts "Setup the simulation environment"
-    set sim [Simulator new $test_file_list]
+    set sim [Simulator new $test_file_list $params(g)]
 
     # Get back to simple commands for the HMI
     interp alias {} c {} $sim c

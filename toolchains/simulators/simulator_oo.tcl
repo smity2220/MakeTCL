@@ -1,3 +1,4 @@
+
 oo::class create Simulator {
     # variable MTCL_OBJ
     variable LAST_COMPILE_TIME 
@@ -7,7 +8,7 @@ oo::class create Simulator {
     variable log
     variable curr_tb
 
-    constructor {mtcl} {
+    constructor {mtcl gui} {
         # set MTCL_OBJ $mtcl
         set MTCL_OPT_LIST [$mtcl getOptList]
         set MTCL_DIR      [dict get $MTCL_OPT_LIST MTCL_DIR]
@@ -19,19 +20,24 @@ oo::class create Simulator {
 
         # Pull in the simulator choice from the options
         set simulator [dict get $MTCL_OPT_LIST SIMULATOR]
+        source $MTCL_DIR/toolchains/utility/src/src.tcl
         switch -nocase $simulator {
             "ghdl"  {
                 #TODO: abstract path to tool chains
-                source $MTCL_DIR/toolchains/simulators/ghdl/ghdl.tcl
+                # src $MTCL_DIR/toolchains/simulators/ghdl/ghdl.tcl $gui
             }
             "modelsim" - "questasim"  {
                 #TODO: abstract path to tool chains
+                # src $MTCL_DIR/toolchains/simulators/mentor/mentor.tcl $gui
                 source $MTCL_DIR/toolchains/simulators/mentor/mentor.tcl
             }
             defualt {
                 $log print 0 "MTCL SIM - ERROR - UNSUPPORTED SIMULATOR $simulator"
             }
         }
+        $log print 0 "MTCL SIM - OPEN - Launching $simulator Simulator"
+        puts "gui = $gui"
+        simOpen $gui
 
     }
     destructor {
