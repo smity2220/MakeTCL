@@ -35,6 +35,7 @@ proc mtcl_sim {t f {g 0} {i 1} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {m
 
     #Define our options structure
     set options [dict create \
+        LOG_LVL             1 \
         WORK_DIR            $WORK_DIR \
         MTCL_DIR            $::env(MTCL_PATH) \
         SIMULATOR           $tool \
@@ -49,8 +50,8 @@ proc mtcl_sim {t f {g 0} {i 1} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {m
     #-------------------------------
     if {$oo == 1} {
         source $::env(MTCL_PATH)/make_oo.tcl
-        set test_file_list [MTcl new $CONFIG_FILE {} $options]
-        $test_file_list dumpLists
+        set mtcl_list [MTcl new $CONFIG_FILE {} $options]
+        $mtcl_list dumpLists
     } else {\
         puts "Creating file lists"
         source $::env(MTCL_PATH)/make.tcl
@@ -75,7 +76,7 @@ proc mtcl_sim {t f {g 0} {i 1} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {m
     if {$oo == 1} {
         puts "Setup the oo simulation environment"
         source $::env(MTCL_PATH)/toolchains/simulators/simulator_oo.tcl
-        set sim [Simulator new $test_file_list $g]
+        set sim [Simulator new $mtcl_list $g]
 
         # Get back to simple commands for the HMI
         interp alias {} c {} $sim c
@@ -86,9 +87,11 @@ proc mtcl_sim {t f {g 0} {i 1} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {m
         interp alias {} rst {} $sim rst
         interp alias {} q {} $sim q
         interp alias {} qq {} $sim qq
+        interp alias {} ver {} $sim ver
         interp alias {} help {} $sim help
         interp alias {} h {} $sim help
         interp alias {} ? {} $sim help
+        # interp alias {} log_lvl {} $mtcl_list.log setLogLvl
 
     } else {
         source $::env(MTCL_PATH)/toolchains/simulators/simulator.tcl
@@ -117,7 +120,7 @@ proc mtcl_sim {t f {g 0} {i 1} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {m
 
         if {$oo == 1} {
             puts "cleaning up oo_test"
-            $test_file_list destroy
+            $mtcl_list destroy
         }
     } else {
         vwait forever;    # run the event loop to serve sockets...

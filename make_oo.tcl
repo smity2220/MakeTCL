@@ -45,7 +45,8 @@ oo::class create MTcl {
         set TB_LIST []
         set VLIB_LIST []
 
-        set log [Logger new 0]
+        set LOG_LVL [dict get $options LOG_LVL]
+        set log [Logger new $LOG_LVL]
 
         $log print 1 "MTCL - Entering .config file $cfgFile"
 
@@ -100,7 +101,7 @@ oo::class create MTcl {
                     $log print 0 "MTCL - RECURSION ERROR - already called $fname"
                 } else {
                     #Recursively call makeLists if we find a new .config file
-                    $log print 0 "MTCL - Found a new .config file $fname"
+                    $log print 1 "MTCL - Found a new .config file $fname"
                     set recursive_oo [MTcl new $fname $CFG_LIST $OPT_LIST]
 
                     #not sure how to check for recursive presence of cfg files in post recursive format
@@ -117,7 +118,7 @@ oo::class create MTcl {
                 if {![dict exists $SRC_LIST $fullfname]} {
                     dict set SRC_LIST $fullfname $opts
                 } else {
-                    $log print 0 "MTCL - Skipping add of existing file: $fname in $CWD"
+                    $log print 1 "MTCL - Skipping add of existing file: $fname in $CWD"
                 }
             }
         }
@@ -147,22 +148,22 @@ oo::class create MTcl {
 
     # Private 
     method DumpList {l header} {
-        $log print 0 "--------------------------------------------------------------------------"
-        $log print 0 $header
-        $log print 0 "--------------------------------------------------------------------------"
+        $log print 1 "--------------------------------------------------------------------------"
+        $log print 1 $header
+        $log print 1 "--------------------------------------------------------------------------"
         foreach item $l {
-            $log print 0 "$item"
+            $log print 1 "$item"
         }
     }
     # Private
     method DumpDict {d headers {formatStr "%-60s%-15s"}} {
         # $log print 0 $headers
-        $log print 0 "--------------------------------------------------------------------------"
-        $log print 0 [format $formatStr [lindex $headers 0] [lindex $headers 1]] 
-        $log print 0 "--------------------------------------------------------------------------"
+        $log print 1 "--------------------------------------------------------------------------"
+        $log print 1 [format $formatStr [lindex $headers 0] [lindex $headers 1]] 
+        $log print 1 "--------------------------------------------------------------------------"
         foreach key [dict keys $d] {
             set value [dict get $d $key]
-            $log print 0 [format $formatStr [file tail $key] "$value"] 
+            $log print 1 [format $formatStr [file tail $key] "$value"] 
         }
     }
 
@@ -170,19 +171,19 @@ oo::class create MTcl {
     method dumpLists {} {
         # set formatStr {%-60s%-15s}
 
-        $log print 0 "\nConfig File List"
+        $log print 1 "\nConfig File List"
         set header "FILE"
         my DumpList $CFG_LIST $header
 
-        $log print 0 "\nMain Source File List"
+        $log print 1 "\nMain Source File List"
         set headers {"FILE" "LIBARAY"}
         my DumpDict $SRC_LIST $headers
 
-        $log print 0 "\nTest Bench List"
+        $log print 1 "\nTest Bench List"
         set headers {"TEST BENCH" "LIBARAY"}
         my DumpDict $TB_LIST $headers
 
-        $log print 0 "\nVendor Library List"
+        $log print 1 "\nVendor Library List"
         set headers {"VENDOR FILE" "LIBARAY"}
         my DumpDict $VLIB_LIST $headers
     }

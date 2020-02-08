@@ -18,6 +18,7 @@ oo::class create Simulator {
 
         # Pull in the simulator choice from the options
         set simulator [dict get $MTCL_OPT_LIST SIMULATOR]
+        set supported_simulators {ghdl questasim modelsim}
         switch -nocase $simulator {
             "ghdl"  {
                 #TODO: abstract path to tool chains
@@ -28,10 +29,11 @@ oo::class create Simulator {
                 source $MTCL_DIR/toolchains/simulators/mentor/mentor.tcl
             }
             defualt {
-                $log print 0 "MTCL SIM - ERROR - UNSUPPORTED SIMULATOR $simulator"
+                $log print 0 "MTCL SIM - ERROR - UNSUPPORTED SIMULATOR $simulator\n \
+                \tSupported simulators = $supported_simulators"
             }
         }
-        $log print 0 "MTCL SIM - OPEN - Launching Simulator $simulator"
+        $log print 1 "MTCL SIM - OPEN - Launching Simulator $simulator"
         simOpen $gui
         simVersion
     }
@@ -132,6 +134,10 @@ oo::class create Simulator {
         exit 0
     }
 
+    method ver {} {
+        $log print 0 [simVersion]
+    }
+
     method help {} {
         set formatStr "%-20s%-15s"
         $log print 0 [simVersion]
@@ -144,18 +150,10 @@ oo::class create Simulator {
         $log print 0 [format $formatStr "rst"           "Reset Simulation"]
         $log print 0 [format $formatStr "r <time>"      "Run Simulation"]
         $log print 0 [format $formatStr "rr"            "Reset and Run"]
-        $log print 0 [format $formatStr "q"             "Exit the current simulation"]
-        $log print 0 [format $formatStr "qq"            "Exit the simulator"]
+        $log print 0 [format $formatStr "q"             "Exit the Current Simulation"]
+        $log print 0 [format $formatStr "qq"            "Exit the Simulator"]
+        $log print 0 [format $formatStr "ver"           "Simulator Version"]
         $log print 0 [format $formatStr "help | h | ?"  "Help"]
         $log print 0 [simHelp]
     }
-
-    # method simVersion {} {}
-    # method simHelp {} {}
-    # method simCompile {file library {args ""}} {}
-    # method simElaborate {tb library {args ""}} {}
-    # method simRun {tb {time ""}} {}
-    # method simRestart {} {}
-    # method simQuit {} {}
-    # method simExit {} {}
 }
