@@ -21,7 +21,7 @@ set options {
 set ::env(MTCL_PATH) [file dirname [file normalize [info script]]]
 puts "MTCL Setup - MTCL_DIR aka ::env(MTCL_PATH) = $::env(MTCL_PATH)"
 
-proc mtcl_sim {t f {g 1} {c ""} {oo 1} {tool ""} {major_ver ""} {minor_ver ""} } {
+proc mtcl_sim {t f {g 0} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {minor_ver ""} } {
     if {[catch {Simulator destroy}]} {}
     if {[catch {Logger destroy}]} {}
     if {[catch {MTcl destroy}]} {}
