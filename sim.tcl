@@ -21,7 +21,7 @@ set options {
 set ::env(MTCL_PATH) [file dirname [file normalize [info script]]]
 puts "MTCL Setup - MTCL_DIR aka ::env(MTCL_PATH) = $::env(MTCL_PATH)"
 
-proc mtcl_sim {t f {g 0} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {minor_ver ""} } {
+proc mtcl_sim {t f {g 0} {i 1} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {minor_ver ""} } {
     if {[catch {Simulator destroy}]} {}
     if {[catch {Logger destroy}]} {}
     if {[catch {MTcl destroy}]} {}
@@ -86,6 +86,9 @@ proc mtcl_sim {t f {g 0} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {minor_v
         interp alias {} rst {} $sim rst
         interp alias {} q {} $sim q
         interp alias {} qq {} $sim qq
+        interp alias {} help {} $sim help
+        interp alias {} h {} $sim help
+        interp alias {} ? {} $sim help
 
     } else {
         source $::env(MTCL_PATH)/toolchains/simulators/simulator.tcl
@@ -104,16 +107,22 @@ proc mtcl_sim {t f {g 0} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {minor_v
     #                never have the tb loaded in time to be ready for the r (run).
     ltb $t
 
-    # puts "Run the test bench"
-    r
+    # If in normal batch mode automatically run the test bench and exit
+    if {$g == 0 && $i == 0} {
+        # puts "Run the test bench"
+        r
 
-    #Print a summary of all test bench results
-    # $sim dumpTbScores
+        #Print a summary of all test bench results
+        # $sim dumpTbScores
 
-    if {$oo == 1} {
-        puts "cleaning up oo_test"
-        $test_file_list destroy
+        if {$oo == 1} {
+            puts "cleaning up oo_test"
+            $test_file_list destroy
+        }
+    } else {
+        vwait forever;    # run the event loop to serve sockets...
     }
+
 }
 
 
@@ -133,4 +142,4 @@ try {
     exit 1
 }
 
-mtcl_sim $params(t) $params(f) $params(g) $params(c) $params(oo) $params(tool) $params(major_ver) $params(minor_ver)
+mtcl_sim $params(t) $params(f) $params(g) $params(i) $params(c) $params(oo) $params(tool) $params(major_ver) $params(minor_ver)

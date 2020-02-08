@@ -42,10 +42,6 @@ global BATCH_MODE
 global SOCKET_MODE
 
 proc simOpen {GUI_MODE} {
-    global vcomCmd
-    global vlogCmd
-    global vlibCmd
-    global vmapCmd
     global vsimCmd
     global ss
     # Check to see if we are currently running in a mentor tool
@@ -57,34 +53,26 @@ proc simOpen {GUI_MODE} {
     # (vsim -batch). 
     global SOCKET_MODE
 
-    if { ![info exists GUI_MODE] } {
-        set GUI_MODE 0
-        if {[catch {batch_mode}]} {
-            puts "setting BATCH_MODE to true"
-            # set BATCH_MODE true
-            set BATCH_MODE 1
-        } else {
-            puts "setting BATCH_MODE to false"
-            # set BATCH_MODE false
-            set BATCH_MODE 0
-        }
+    if {$GUI_MODE==1} {
+        puts "in GUI_MODE"
+        set BATCH_MODE 0        
+    } elseif {[catch {batch_mode}]} {
+        puts "setting BATCH_MODE to true"
+        set BATCH_MODE 1
     } else {
-        if {$GUI_MODE==1} {
-            puts "in GUI_MODE"
-            set BATCH_MODE 0        
-        } elseif {[catch {batch_mode}]} {
-            puts "setting BATCH_MODE to true"
-            # set BATCH_MODE true
-            set BATCH_MODE 1
-        } else {
-            puts "setting BATCH_MODE to false"
-            # set BATCH_MODE false
-            set BATCH_MODE 0
-        }
+        puts "setting BATCH_MODE to false"
+        set BATCH_MODE 0
     }
 
     set SOCKET_MODE [expr $BATCH_MODE==1 || $GUI_MODE==1]
-    if {$BATCH_MODE == 1} {
+
+    if {$SOCKET_MODE == 1} {
+        if {$BATCH_MODE == 1} {
+            set batch_mode_str "-c "
+        } else {
+            set batch_mode_str ""
+        }
+
         puts "MTCL - Starting Server in BATCH_MODE"
         # source ../toolchains/utility/socket/socket_server.tcl
         source $::env(MTCL_PATH)/toolchains/utility/socket/socket_server_oo.tcl
@@ -93,7 +81,7 @@ proc simOpen {GUI_MODE} {
         set ss [SocketServer new]
 
         puts "MTCL - Starting Modelsim Client"
-        set cmd_str "$vsimCmd -c -do $::env(MTCL_PATH)/toolchains/utility/socket/socket_client.tcl"
+        set cmd_str "$vsimCmd $batch_mode_str\-do $::env(MTCL_PATH)/toolchains/utility/socket/socket_client.tcl"
 
         # >@stdout
         # if {[catch {exec {*}$cmd_str &}]} {
@@ -107,31 +95,16 @@ proc simOpen {GUI_MODE} {
         puts "MTCL - Entering Server Event Loop"
         $ss serverVwait
         puts "Connection established - moving on"
-    } elseif {$GUI_MODE == 1} {
-        puts "MTCL - Starting Server in BATCH_MODE"
-        # source ../toolchains/utility/socket/socket_server.tcl
-        source $::env(MTCL_PATH)/toolchains/utility/socket/socket_server_oo.tcl
 
-        # Create a new Socket Server
-        set ss [SocketServer new]
+        # If we are in socket GUI mode then we could source the whole enivronment 
+        # in the simulator shell through the socket.
+        #  *open sim.tcl and push it over the socket
+        #  *call mtcl_sim <test bench> <config file>
 
-        puts "MTCL - Starting Modelsim Client"
-        set cmd_str "$vsimCmd -do {$::env(MTCL_PATH)/toolchains/utility/socket/socket_client.tcl}"
+    } else {
+        # We must be running from the simulator shell directly
 
-        # >@stdout
-        # if {[catch {exec {*}$cmd_str &}]} {
-        #     puts "MTCL ERROR - launching socket client - $::errorInfo"
-        #     # return false
-        # }
-
-        # Launch the simulator in the background and start up the socket client.
-        eval {exec {*}$cmd_str >@stdout &}
-
-        puts "MTCL - Entering Server Event Loop"
-        $ss serverVwait
-        puts "Connection established - moving on"
-    }
-
+   }
 }
 
 proc mentorExec {cmd} {
@@ -169,51 +142,17 @@ proc simVersion {} {
 }
 
 proc simHelp {} {
-    global BATCH_MODE
-    if {$BATCH_MODE} {
-        puts "---------------------------------------"
-        puts "Welcome to batch mode with Mentor"
-        puts "  *useful information"
-        puts "---------------------------------------"
-    } else {
-        puts "---------------------------------------"
-        puts "Welcome to GUI mode with Mentor"
-        puts "  *useful information"
-        puts "---------------------------------------"
-    }
+    return "\
+---------------------------------------\n\
+*useful information\n\
+---------------------------------------";
 }
 
 proc simCompile {file library {args ""}} {
-    global BATCH_MODE
-    # global vcomCmd
-    # global vlogCmd
-    # global vlibCmd
-    # global vmapCmd
-
     #Create library if it doesn't exists
     if {![file isdirectory simlib/$library]} {
         file mkdir simlib/$library
-        # if {$BATCH_MODE} {
-        #     if {[catch {exec "$vlibCmd" $library}]} {
-        #         puts "MTCL ERROR - mentor - $vlibCmd $library"
-        #         puts "MTCL ERROR - mentor - $::errorInfo"
-        #         return false
-        #     }
-        # } else {
-        #     vlib $library
-        # }
         mentorExec "vlib simlib/$library"
-
-        #Map if needed
-        # if {$BATCH_MODE} {
-        #     if {[catch {exec "$vmapCmd" $library $library}]} {
-        #         puts "MTCL ERROR - mentor - $vmapCmd $library $library"
-        #         puts "MTCL ERROR - mentor - $::errorInfo"
-        #         return false
-        #     }
-        # } else {
-        #     vmap $library $library
-        # }
         mentorExec "vmap $library simlib/$library"
     }
 
@@ -253,16 +192,6 @@ proc simCompile {file library {args ""}} {
     }
 
     #Execute our command string appropriately based upon the mode
-    # if {$BATCH_MODE} {
-    #     # Use TCL list expansion {*} to pass the command string in as a list of arguments for exec
-    #     if {[catch {exec {*}$cmd_str}]} {
-    #         puts "MTCL ERROR - mentor compile - $::errorInfo"
-    #         return false
-    #     }
-    # } else {
-    #     # puts "$cmd_str"
-    #     eval {*}$cmd_str
-    # }
     mentorExec $cmd_str
 
     return true
@@ -274,47 +203,21 @@ proc simCompile {file library {args ""}} {
 # way around this is to utilize the -do flag to pass another script that will run
 # the simulation. In the future, it would be possible but perhaps overkill to have 
 # that script open a socket and execute commands passed to it from this environment.
+# UPDATE:
+#   Socket mode works well and is the solution going forward
 proc simElaborate {tb library {args ""}} {
-    global vsimCmd
-    global BATCH_MODE
-    set cmd_str ""
-
-    # if {$BATCH_MODE} {
-    #     # UPDATE
-    #     #   Using the stdout redirection capabilities of "exec" is close to what I want,
-    #     #   though it still isn't perfect as it does jump you into a new TCL shell.
-    #     #     set cmd_str "$vsimCmd -c $library.$tb"
-    #     # THIS IS THE OLD COMMAND 
-    #     set cmd_str "$vsimCmd -c $library.$tb -do \"run -all; quit\""
-    #     # This version attempts to re-source the simulator scripts in the new shell... can't pass mentor as an arg though...
-    #     # set cmd_str "$vsimCmd -c $library.$tb -do ../toolchains/simulators/simulator.tcl" 
-    #     if {[catch {exec {*}$cmd_str >@stdout}]} { 
-    #         # mTclLog 1 "MTCL ERROR - mentor elaborate - $vsimCmd -c $library.$tb -do run -all; quit"
-    #         puts "MTCL ERROR - mentor elaborate - $::errorInfo"
-    #         return false
-    #     }
-    # } else {
-    #     vsim $library.$tb
-    # }
     mentorExec "vsim $library.$tb"
     mentorExec "add log -r /*"
     return true
 }
 
 proc simRun {tb {time ""}} {
-    global vsimCmd
-    global BATCH_MODE
     set cmd_str ""
-    # if {$BATCH_MODE} {
-    #     # Elaboration executes the run phase when in batch mode.
-    #     set cmd_str "run -all"
-    # } else {
-        if {$time == ""} {
-            set cmd_str "run -all"
-        } else {
-            set cmd_str "run $time ns"
-        }
-    # }
+    if {$time == ""} {
+        set cmd_str "run -all"
+    } else {
+        set cmd_str "run $time ns"
+    }
 
     # if {[catch {$cmd_str}]} {
     #     puts "No TB loaded! Load a test bench \"ltb\" <tb name>"
@@ -323,51 +226,23 @@ proc simRun {tb {time ""}} {
     return true
 }
 
-# GUI mode only?
+
 proc simRestart {} {
-    # restart -f
-    # if {[catch {restart -f}]} {
-    #     puts "No TB loaded! Load a test bench \"ltb\" <tb name>"
-    # }
     mentorExec "restart -f"
 }
 
-# GUI mode only?
+
 proc simQuit {} {
-    # quit
-    # if {[catch {quit}]} {
-    #     puts "No TB loaded! Load a test bench \"ltb\" <tb name>"
-    # }
     mentorExec "quit"
 }
 
-# GUI mode only?
 proc simExit {} {
     global SOCKET_MODE
     global ss
     if {$SOCKET_MODE} {
+        mentorExec "quit -f"
         $ss send "close"
     } else {
         quit -f
     }
 }
-
-
-
-
-
-
-
-# vsim -c counter <infile >outfile
-
-# if {[catch {exec "$vsimCmd" -c -do socket_client.tcl >@stdout &}]} {
-    # puts "ERROR"
-# }
-
-
-# socket -server accept 12345   ;# pick your own port number...
-# proc accept {channel host port} {
-#     exec [info nameofexecutable] realScript.tcl \
-#             <@$channel >@$channel 2>@$channel &
-# }
-# vwait forever                 ;# run the event loop to serve sockets...

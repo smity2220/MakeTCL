@@ -1,6 +1,5 @@
 
 oo::class create Simulator {
-    # variable MTCL_OBJ
     variable LAST_COMPILE_TIME 
     variable MTCL_SRC_LIST
     variable MTCL_TB_LIST
@@ -9,7 +8,6 @@ oo::class create Simulator {
     variable curr_tb
 
     constructor {mtcl gui} {
-        # set MTCL_OBJ $mtcl
         set MTCL_OPT_LIST [$mtcl getOptList]
         set MTCL_DIR      [dict get $MTCL_OPT_LIST MTCL_DIR]
         set MTCL_SRC_LIST [$mtcl getSrcList]
@@ -35,7 +33,7 @@ oo::class create Simulator {
         }
         $log print 0 "MTCL SIM - OPEN - Launching Simulator $simulator"
         simOpen $gui
-
+        simVersion
     }
     destructor {
         $log destroy
@@ -131,6 +129,25 @@ oo::class create Simulator {
     #Exit simulator
     method qq {} {
         simExit
+        exit 0
+    }
+
+    method help {} {
+        set formatStr "%-20s%-15s"
+        $log print 0 [simVersion]
+        $log print 0 "--------------------------------------------------------------------------"
+        $log print 0 [format $formatStr "COMMAND" "DESCRIPTION"] 
+        $log print 0 "--------------------------------------------------------------------------"
+        $log print 0 [format $formatStr "c"             "Incremental Re-compile"]
+        $log print 0 [format $formatStr "cc"            "Full Re-compile"]
+        $log print 0 [format $formatStr "ltb"           "Load Test Bench"]
+        $log print 0 [format $formatStr "rst"           "Reset Simulation"]
+        $log print 0 [format $formatStr "r <time>"      "Run Simulation"]
+        $log print 0 [format $formatStr "rr"            "Reset and Run"]
+        $log print 0 [format $formatStr "q"             "Exit the current simulation"]
+        $log print 0 [format $formatStr "qq"            "Exit the simulator"]
+        $log print 0 [format $formatStr "help | h | ?"  "Help"]
+        $log print 0 [simHelp]
     }
 
     # method simVersion {} {}
