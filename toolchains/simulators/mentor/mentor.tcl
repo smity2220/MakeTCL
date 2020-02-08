@@ -38,12 +38,16 @@ set vsimCmd $toolPath/$vsimCmd
 global ss
 set ss ""
 
+global BATCH_MODE
+global SOCKET_MODE
+
 proc simOpen {GUI_MODE} {
     global vcomCmd
     global vlogCmd
     global vlibCmd
     global vmapCmd
     global vsimCmd
+    global ss
     # Check to see if we are currently running in a mentor tool
     # shell or if we are in batch mode.
     global BATCH_MODE
@@ -181,10 +185,10 @@ proc simHelp {} {
 
 proc simCompile {file library {args ""}} {
     global BATCH_MODE
-    global vcomCmd
-    global vlogCmd
-    global vlibCmd
-    global vmapCmd
+    # global vcomCmd
+    # global vlogCmd
+    # global vlibCmd
+    # global vmapCmd
 
     #Create library if it doesn't exists
     if {![file isdirectory simlib/$library]} {
@@ -220,7 +224,7 @@ proc simCompile {file library {args ""}} {
     set cmd_str ""
     switch -glob [file extension $file] {
         ".sv" - ".v" {
-            set cmd_str "$vlogCmd $file"
+            set cmd_str "vlog $file"
         }
         ".c*" {
             # TODO: C files for SV DPI integration. Not intending to support any other FLI. 
@@ -233,7 +237,7 @@ proc simCompile {file library {args ""}} {
             } else {
                 lappend mentor_sim_args "-93"
             }
-            set cmd_str "$vcomCmd $mentor_sim_args -quiet -work $library $file"
+            set cmd_str "vcom $mentor_sim_args -quiet -work $library $file"
         }
         ".tcl" {
             # TCL files are special in that we just dive right in and source them

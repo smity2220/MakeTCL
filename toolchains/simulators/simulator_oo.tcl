@@ -20,23 +20,20 @@ oo::class create Simulator {
 
         # Pull in the simulator choice from the options
         set simulator [dict get $MTCL_OPT_LIST SIMULATOR]
-        source $MTCL_DIR/toolchains/utility/src/src.tcl
         switch -nocase $simulator {
             "ghdl"  {
                 #TODO: abstract path to tool chains
-                # src $MTCL_DIR/toolchains/simulators/ghdl/ghdl.tcl $gui
+                source $MTCL_DIR/toolchains/simulators/ghdl/ghdl.tcl
             }
             "modelsim" - "questasim"  {
                 #TODO: abstract path to tool chains
-                # src $MTCL_DIR/toolchains/simulators/mentor/mentor.tcl $gui
                 source $MTCL_DIR/toolchains/simulators/mentor/mentor.tcl
             }
             defualt {
                 $log print 0 "MTCL SIM - ERROR - UNSUPPORTED SIMULATOR $simulator"
             }
         }
-        $log print 0 "MTCL SIM - OPEN - Launching $simulator Simulator"
-        puts "gui = $gui"
+        $log print 0 "MTCL SIM - OPEN - Launching Simulator $simulator"
         simOpen $gui
 
     }
