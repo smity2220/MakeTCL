@@ -145,4 +145,5 @@ try {
     exit 1
 }
 
+# If we got down here then we've been supplied a proper set of command line arguments.
 mtcl_sim $params(t) $params(f) $params(g) $params(i) $params(c) $params(oo) $params(tool) $params(major_ver) $params(minor_ver)

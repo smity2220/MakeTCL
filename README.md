@@ -56,3 +56,12 @@ The layered architecture of this scripting environment lends itself to OO design
 A basic utility socket server client pair is under development. It is expected to be used to bridge between the main TCL shell and vendor TCL shells when the vendor tool doesn't support a batch mode. An OO version of the socket server was a recent addition. The client will always remain in its simple structured form.
 
 So far testing shows promise and my in-fact prove to be a nice way to standardize the interfaces to all tools.
+
+# Modes of Operation
+## Simulation
+* Batch Mode - Executes a sim from the user's shell of choice returning when the simulation completes.
+* Interactive Mode ("-i") - Compiles and loads test bench then waits for commands.
+* GUI Mode ("-g") - Same as "Interactive Mode" but launches the simulator GUI.
+	* FIXME - Once launched the user can't access the MTCL environment from the simulator console
+* Simulator Console Mode - Source the MTCL enironment in the simulator console 
+	* FIXME - after launch console appears unresonpsive
