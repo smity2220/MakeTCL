@@ -64,4 +64,5 @@ So far testing shows promise and my in-fact prove to be a nice way to standardiz
 * GUI Mode ("-g") - Same as "Interactive Mode" but launches the simulator GUI.
 	* FIXME - Once launched the user can't access the MTCL environment from the simulator console
 * Simulator Console Mode - Source the MTCL enironment in the simulator console 
-	* FIXME - after launch console appears unresonpsive
+	* source sim.tcl
+	* mtcl_sim <test bench> <config file>
