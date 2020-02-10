@@ -18,10 +18,11 @@ proc handleComm {S} {
 
     if {[eof $S]} {
         close $S
+        fileevent stdin readable {}
         exit
     }
     set rxStr [gets $S]
-    # puts "$rxStr"
+    # puts "rxStr = $rxStr"
     # puts "message of length $rxStr recieved" 
     switch -exact -- $rxStr { 
         -1 { 
@@ -29,8 +30,8 @@ proc handleComm {S} {
             #on the other end so close our side 
             puts "closing connection to $dns_addr $port on read eof" 
             close $S
+            fileevent stdin readable {}
             exit 
-            # return 
         } 
         0 { 
             #ignore empty messages 
@@ -41,12 +42,11 @@ proc handleComm {S} {
         puts "closing connection!"
         sockSend "close"
         close $S
-        fileevent $stdin readable {}
         set closed true
+        fileevent stdin readable {}
         exit
     } else {
         # puts "FROM SERVER - $rxStr"
-        # catch {eval $rxStr}
         catch {uplevel #0 $rxStr} result
         # send the result back to the server
         # puts "CLIENT - done running command $rxStr"
@@ -69,20 +69,16 @@ fileevent $sock readable [list handleComm $sock]
 global command 
 proc StdinRead {} {
     global sock
-    global closed
     global command 
-    if [eof stdin] {
-        exit
-    }
+    # if [eof stdin] {
+    #     fileevent stdin readable {}
+    #     exit
+    # }
     append command(line) [gets stdin]
     if [info complete $command(line)] {
-        # if {$closed} {
-            catch {uplevel #0 $command(line)} result
-            # puts "I'm the client - $result"
-            flush stdout
-        # } else {
-        #     sockSend $command(line)
-        # }
+        catch {uplevel #0 $command(line)} result
+        # puts "I'm the client - $result"
+        flush stdout
         set command(line) {}
     }
 }
@@ -91,16 +87,10 @@ proc StdinRead {} {
 # fileevent stdin readable StdinRead
 
 
-#Test code
-# sockSend "hi there"
-
-# puts "this is the client"
-
-#Wait for the server to tell us to close
-vwait $closed
+vwait closed;
 
 #Clear our handler of stdin
-fileevent $stdin readable {}
+fileevent stdin readable {}
 
 #Get out
 exit

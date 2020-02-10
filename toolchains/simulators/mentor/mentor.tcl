@@ -74,7 +74,6 @@ proc simOpen {GUI_MODE} {
         }
 
         puts "MTCL - Starting Server in BATCH_MODE"
-        # source ../toolchains/utility/socket/socket_server.tcl
         source $::env(MTCL_PATH)/toolchains/utility/socket/socket_server_oo.tcl
 
         # Create a new Socket Server
@@ -82,12 +81,6 @@ proc simOpen {GUI_MODE} {
 
         puts "MTCL - Starting Modelsim Client"
         set cmd_str "$vsimCmd $batch_mode_str\-do $::env(MTCL_PATH)/toolchains/utility/socket/socket_client.tcl"
-
-        # >@stdout
-        # if {[catch {exec {*}$cmd_str &}]} {
-        #     puts "MTCL ERROR - launching socket client - $::errorInfo"
-        #     # return false
-        # }
 
         # Launch the simulator in the background and start up the socket client.
         eval {exec {*}$cmd_str >@stdout &}
@@ -102,18 +95,18 @@ proc simOpen {GUI_MODE} {
         #  *call mtcl_sim <test bench> <config file>
         # OR I can define some basic procs that wrap the socket send
         # that let the server side know what command to run. See below...
-        set gui_mode_funcs "proc c {} {sockSend \"mtclCmd c\"}\n\
-            proc cc {} {sockSend \"mtclCmd cc\"}\n\
-            proc ltb {tb} {sockSend \"mtclCmd ltb \$tb\"}\n\
-            proc rst {} {sockSend \"mtclCmd rst\"}\n\
-            proc r {t \"\"} {sockSend \"mtclCmd r \$t\"}\n\
-            proc rr {} {sockSend \"mtclCmd rr\"}\n\
-            proc q {} {sockSend \"mtclCmd q\"}\n\
-            proc qq {} {sockSend \"mtclCmd qq\"}\n\
-            proc ver {} {sockSend \"mtclCmd ver\"}\n\
-            proc cc {} {sockSend \"mtclCmd cc\"}\n"
+        mentorExec "proc c {} {sockSend \"mtclCmd c\"}"
+        mentorExec "proc cc {} {sockSend \"mtclCmd cc\"}"
+        mentorExec "proc ltb {tb} {sockSend \"mtclCmd ltb \$tb\"}"
+        mentorExec "proc rst {} {sockSend \"mtclCmd rst\"}"
+        mentorExec "proc r {t \"\"} {sockSend \"mtclCmd r \$t\"}"
+        mentorExec "proc rr {} {sockSend \"mtclCmd rr\"}"
+        mentorExec "proc q {} {sockSend \"mtclCmd q\"}"
+        mentorExec "proc qq {} {sockSend \"mtclCmd qq\"}"
+        mentorExec "proc ver {} {sockSend \"mtclCmd ver\"}"
+        mentorExec "proc cc {} {sockSend \"mtclCmd cc\"}"
 
-        mentorExec $gui_mode_funcs
+        # mentorExec $gui_mode_funcs
 
     } else {
         # We must be running from the simulator shell directly
@@ -244,8 +237,11 @@ proc simExit {} {
     global SOCKET_MODE
     global ss
     if {$SOCKET_MODE} {
-        mentorExec "quit -f"
+        # mentorExec "quit -f"
         $ss send "close"
+
+        # exec kill -INT [pid $ss]
+        # catch {close $ss}
     } else {
         quit -f
     }

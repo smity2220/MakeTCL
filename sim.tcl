@@ -112,7 +112,7 @@ proc mtcl_sim {t f {g 0} {i 1} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {m
 
     # If in normal batch mode automatically run the test bench and exit
     if {$g == 0 && $i == 0} {
-        # puts "Run the test bench"
+        puts "Run the test bench"
         r
 
         #Print a summary of all test bench results
@@ -120,7 +120,11 @@ proc mtcl_sim {t f {g 0} {i 1} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {m
 
         if {$oo == 1} {
             puts "cleaning up oo_test"
-            $mtcl_list destroy
+            qq
+            puts "sim destroy"
+            $sim destroy
+            puts "mtcl_list destroy" 
+            # $mtcl_list destroy
         }
     } else {
         vwait forever;    # run the event loop to serve sockets...

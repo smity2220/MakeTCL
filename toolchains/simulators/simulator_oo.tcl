@@ -38,7 +38,7 @@ oo::class create Simulator {
         simVersion
     }
     destructor {
-        $log destroy
+        # $log destroy
         Simulator destroy
     }
 

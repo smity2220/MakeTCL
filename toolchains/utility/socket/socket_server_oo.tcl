@@ -1,8 +1,5 @@
 oo::class create SocketServer {
-    # variable MTCL_OBJ
-
     variable sock
-    variable closed
     variable connected
     variable ack
     variable command
@@ -17,9 +14,7 @@ oo::class create SocketServer {
     # Handler for socket traffic
     method handleComm {} {
         my variable sock
-        my variable closed
         my variable ack
-        # global closed
         set rxStr [gets $sock]
         switch -exact -- $rxStr { 
             -1 { 
@@ -37,8 +32,7 @@ oo::class create SocketServer {
         if {$rxStr == "close"} {
             puts "closing connection!"
             close $sock
-            set closed true
-            # exit
+            exit
         } else {
             # Just print responses from the client
             # puts "FROM CLIENT - $rxStr"
@@ -63,9 +57,6 @@ oo::class create SocketServer {
         fconfigure $sock -buffering line     
 
         puts "$addr:$port connected"
-
-        #Test code
-        # send "hi there"
 
         set connected true
         puts "accept - connected = $connected"
@@ -98,13 +89,8 @@ oo::class create SocketServer {
         }
         append command(line) [gets stdin]
         if [info complete $command(line)] {
-            # if {$closed} {
-                catch {uplevel #0 $command(line)} result
-                puts "$result"
-                flush stdout
-            # } else {
-            #     send $command(line)
-            # }
+            catch {uplevel #0 $command(line)} result
+            # puts "result = $result"
             flush stdout
             set command(line) {}
         }
