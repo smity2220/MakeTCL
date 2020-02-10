@@ -42,6 +42,11 @@ oo::class create SocketServer {
         } else {
             # Just print responses from the client
             # puts "FROM CLIENT - $rxStr"
+            if {[lindex $rxStr 0] == "mtclCmd"} {
+                puts "FOUND a mtclCmd! CMD = [lindex $rxStr 1]"
+                # puts $sock [lindex $rxStr 1]
+                catch {uplevel #0 [lindex $rxStr 1]} result
+            }
             # Increment ack to trigger events. Use the absolute variable name
             incr [my varname ack]
         }

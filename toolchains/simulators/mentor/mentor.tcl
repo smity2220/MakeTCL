@@ -100,6 +100,20 @@ proc simOpen {GUI_MODE} {
         # in the simulator shell through the socket.
         #  *open sim.tcl and push it over the socket
         #  *call mtcl_sim <test bench> <config file>
+        # OR I can define some basic procs that wrap the socket send
+        # that let the server side know what command to run. See below...
+        set gui_mode_funcs "proc c {} {sockSend \"mtclCmd c\"}\n\
+            proc cc {} {sockSend \"mtclCmd cc\"}\n\
+            proc ltb {tb} {sockSend \"mtclCmd ltb \$tb\"}\n\
+            proc rst {} {sockSend \"mtclCmd rst\"}\n\
+            proc r {t \"\"} {sockSend \"mtclCmd r \$t\"}\n\
+            proc rr {} {sockSend \"mtclCmd rr\"}\n\
+            proc q {} {sockSend \"mtclCmd q\"}\n\
+            proc qq {} {sockSend \"mtclCmd qq\"}\n\
+            proc ver {} {sockSend \"mtclCmd ver\"}\n\
+            proc cc {} {sockSend \"mtclCmd cc\"}\n"
+
+        mentorExec $gui_mode_funcs
 
     } else {
         # We must be running from the simulator shell directly
@@ -123,19 +137,9 @@ proc mentorExec {cmd} {
 }
 
 proc simVersion {} {
-    global BATCH_MODE
-    global vsimCmd
     set version 0
     #Echo the simulator version
-    if {$BATCH_MODE} {
-        if {[catch {exec "$vsimCmd" -version}]} {
-            puts "MTCL ERROR - mentor - $::errorInfo"
-        } else {
-            set version [exec "$vsimCmd" -version]
-        }
-    } else {
-        set version [vsim -version]
-    }
+    mentorExec "vsim -version"
     # puts "version = $version"
     # lsearch -inline [split $version " "] {vsim}
     return $version
