@@ -21,7 +21,7 @@ set options {
 set ::env(MTCL_PATH) [file dirname [file normalize [info script]]]
 puts "MTCL Setup - MTCL_DIR aka ::env(MTCL_PATH) = $::env(MTCL_PATH)"
 
-proc mtcl_sim {t f {g 0} {i 1} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {minor_ver ""} } {
+proc mtcl_sim {t f {g 0} {i 0} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {minor_ver ""} {gc 1}} {
     if {[catch {Simulator destroy}]} {}
     if {[catch {Logger destroy}]} {}
     if {[catch {MTcl destroy}]} {}
@@ -110,8 +110,12 @@ proc mtcl_sim {t f {g 0} {i 1} {c ""} {oo 1} {tool "modelsim"} {major_ver ""} {m
     #                never have the tb loaded in time to be ready for the r (run).
     ltb $t
 
+    # Simulator Console Mode
+    if {$gc == 1} {
+        return
     # If in normal batch mode automatically run the test bench and exit
-    if {$g == 0 && $i == 0} {
+    } elseif {$g == 0 && $i == 0} {
+
         puts "Run the test bench"
         r
 
@@ -150,4 +154,4 @@ try {
 }
 
 # If we got down here then we've been supplied a proper set of command line arguments.
-mtcl_sim $params(t) $params(f) $params(g) $params(i) $params(c) $params(oo) $params(tool) $params(major_ver) $params(minor_ver)
+mtcl_sim $params(t) $params(f) $params(g) $params(i) $params(c) $params(oo) $params(tool) $params(major_ver) $params(minor_ver) 0
